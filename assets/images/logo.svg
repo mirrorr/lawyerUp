@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="200" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M50 100C50 72.3858 72.3858 50 100 50H150C177.614 50 200 72.3858 200 100C200 127.614 177.614 150 150 150H100C72.3858 150 50 127.614 50 100Z" fill="#7C3AED"/>
+  <path d="M250 100C250 72.3858 272.386 50 300 50H350C377.614 50 400 72.3858 400 100C400 127.614 377.614 150 350 150H300C272.386 150 250 127.614 250 100Z" fill="#7C3AED"/>
+  <text x="450" y="125" font-family="Arial" font-size="80" font-weight="bold" fill="#7C3AED">LawyerUp</text>
+</svg>
