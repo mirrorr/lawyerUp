@@ -1,5 +1,7 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { Settings, Bell, Shield, CreditCard, HelpCircle, LogOut } from 'lucide-react-native';
+import { supabase } from '@/lib/supabase';
+import { router } from 'expo-router';
 
 const menuItems = [
   {
@@ -30,6 +32,11 @@ const menuItems = [
 ];
 
 export default function Profile() {
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.replace('/auth/sign-in');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -56,7 +63,7 @@ export default function Profile() {
             </TouchableOpacity>
           ))}
 
-          <TouchableOpacity style={[styles.menuItem, styles.logoutButton]}>
+          <TouchableOpacity style={[styles.menuItem, styles.logoutButton]} onPress={handleSignOut}>
             <View style={styles.menuItemContent}>
               <LogOut size={20} color="#ef4444" />
               <Text style={[styles.menuItemText, styles.logoutText]}>Log Out</Text>

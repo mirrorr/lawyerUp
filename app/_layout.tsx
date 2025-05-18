@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 
 declare global {
   interface Window {
@@ -9,15 +11,26 @@ declare global {
 }
 
 export default function RootLayout() {
+  const { session, loading } = useAuth();
+
   useEffect(() => {
     window.frameworkReady?.();
   }, []);
 
+  if (loading) {
+    return null;
+  }
+
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      {!session ? (
+        <Redirect href="/auth/sign-in" />
+      ) : (
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      )}
       <StatusBar style="auto" />
     </>
   );
