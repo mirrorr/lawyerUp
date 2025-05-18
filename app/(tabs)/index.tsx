@@ -77,7 +77,7 @@ export default function FindLawyers() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image 
-          source={require('../../assets/images/logo.svg')}
+          source={require('../../assets/images/logo2.png')}
           style={styles.logo}
           resizeMode="contain"
         />
