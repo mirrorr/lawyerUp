@@ -1,81 +1,88 @@
+import { useState, useEffect } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useLocalSearchParams, Link, useRouter } from 'expo-router';
 import { MapPin, Star, MessageSquare, Calendar, Clock, Briefcase, Award, Globe, ArrowLeft } from 'lucide-react-native';
+import { supabase } from '@/lib/supabase';
 
-const lawyerData = {
-  '1': {
-    id: '1',
-    name: 'Sarah Johnson',
-    specialty: 'Criminal Law',
-    rating: 4.8,
-    reviews: 127,
-    image: 'https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg',
-    location: 'New York, NY',
-    experience: '15 years',
-    languages: ['English', 'Spanish'],
-    education: 'Harvard Law School',
-    consultationFee: '$200/hour',
-    availability: 'Mon-Fri, 9AM-5PM',
-    about: 'Specializing in criminal defense with a proven track record of successful cases. Dedicated to providing aggressive representation while maintaining the highest ethical standards.',
-    reviews_list: [
-      {
-        id: '1',
-        user: 'John D.',
-        rating: 5,
-        date: '2 weeks ago',
-        comment: 'Sarah was extremely professional and helped me navigate through my case with expertise and compassion.',
-      },
-      {
-        id: '2',
-        user: 'Maria R.',
-        rating: 4,
-        date: '1 month ago',
-        comment: 'Very knowledgeable and responsive. Would definitely recommend her services.',
-      },
-    ],
-  },
-  '2': {
-    id: '2',
-    name: 'Michael Chen',
-    specialty: 'Corporate Law',
-    rating: 4.9,
-    reviews: 89,
-    image: 'https://images.pexels.com/photos/5668770/pexels-photo-5668770.jpeg',
-    location: 'San Francisco, CA',
-    experience: '12 years',
-    languages: ['English', 'Mandarin'],
-    education: 'Stanford Law School',
-    consultationFee: '$250/hour',
-    availability: 'Mon-Fri, 8AM-6PM',
-    about: 'Expert in corporate law and business transactions. Helping companies navigate complex legal challenges and achieve their business objectives.',
-    reviews_list: [
-      {
-        id: '1',
-        user: 'David L.',
-        rating: 5,
-        date: '1 week ago',
-        comment: 'Michael provided excellent guidance for our startup\'s legal needs.',
-      },
-      {
-        id: '2',
-        user: 'Sarah P.',
-        rating: 5,
-        date: '3 weeks ago',
-        comment: 'Extremely thorough and professional. Great experience working with him.',
-      },
-    ],
-  },
-};
+interface Lawyer {
+  id: string;
+  name: string;
+  specialty: string;
+  rating: number;
+  reviews_count: number;
+  image_url: string;
+  location: string;
+  experience: string;
+  languages: string[];
+  education: string;
+  consultation_fee: string;
+  availability: string;
+  about: string;
+}
 
 export default function LawyerProfile() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const lawyer = lawyerData[id as keyof typeof lawyerData];
+  const [lawyer, setLawyer] = useState<Lawyer | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!lawyer) {
+  useEffect(() => {
+    fetchLawyer();
+  }, [id]);
+
+  const fetchLawyer = async () => {
+    try {
+      setLoading(true);
+      const { data, error: fetchError } = await supabase
+        .from('lawyers')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!data) throw new Error('Lawyer not found');
+
+      setLawyer(data);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Error fetching lawyer:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
     return (
       <View style={styles.container}>
-        <Text>Lawyer not found</Text>
+        <View style={styles.navigationHeader}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <ArrowLeft size={24} color="#1e293b" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Lawyer Profile</Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading lawyer profile...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (error || !lawyer) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.navigationHeader}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <ArrowLeft size={24} color="#1e293b" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Lawyer Profile</Text>
+        </View>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error || 'Lawyer not found'}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchLawyer}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -83,10 +90,7 @@ export default function LawyerProfile() {
   return (
     <View style={styles.container}>
       <View style={styles.navigationHeader}>
-        <TouchableOpacity 
-          onPress={() => router.back()} 
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <ArrowLeft size={24} color="#1e293b" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Lawyer Profile</Text>
@@ -94,7 +98,7 @@ export default function LawyerProfile() {
 
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.header}>
-          <Image source={{ uri: lawyer.image }} style={styles.profileImage} />
+          <Image source={{ uri: lawyer.image_url }} style={styles.profileImage} />
           <View style={styles.headerInfo}>
             <Text style={styles.name}>{lawyer.name}</Text>
             <Text style={styles.specialty}>{lawyer.specialty}</Text>
@@ -105,7 +109,7 @@ export default function LawyerProfile() {
             <View style={styles.ratingContainer}>
               <Star size={16} color="#fbbf24" fill="#fbbf24" />
               <Text style={styles.rating}>{lawyer.rating}</Text>
-              <Text style={styles.reviews}>({lawyer.reviews} reviews)</Text>
+              <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
             </View>
           </View>
         </View>
@@ -120,7 +124,7 @@ export default function LawyerProfile() {
             <View style={styles.infoItem}>
               <Clock size={20} color="#64748b" />
               <Text style={styles.infoLabel}>Consultation Fee</Text>
-              <Text style={styles.infoValue}>{lawyer.consultationFee}</Text>
+              <Text style={styles.infoValue}>{lawyer.consultation_fee}</Text>
             </View>
             <View style={styles.infoItem}>
               <Globe size={20} color="#64748b" />
@@ -138,29 +142,6 @@ export default function LawyerProfile() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
           <Text style={styles.about}>{lawyer.about}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Reviews</Text>
-          {lawyer.reviews_list.map((review) => (
-            <View key={review.id} style={styles.reviewCard}>
-              <View style={styles.reviewHeader}>
-                <Text style={styles.reviewUser}>{review.user}</Text>
-                <Text style={styles.reviewDate}>{review.date}</Text>
-              </View>
-              <View style={styles.reviewRating}>
-                {[...Array(5)].map((_, index) => (
-                  <Star
-                    key={index}
-                    size={16}
-                    color="#fbbf24"
-                    fill={index < review.rating ? '#fbbf24' : 'transparent'}
-                  />
-                ))}
-              </View>
-              <Text style={styles.reviewComment}>{review.comment}</Text>
-            </View>
-          ))}
         </View>
 
         <View style={styles.actionButtons}>
@@ -301,35 +282,6 @@ const styles = StyleSheet.create({
     color: '#334155',
     lineHeight: 24,
   },
-  reviewCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  reviewUser: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e293b',
-  },
-  reviewDate: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  reviewRating: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  reviewComment: {
-    fontSize: 14,
-    color: '#334155',
-    lineHeight: 20,
-  },
   actionButtons: {
     padding: 20,
     backgroundColor: '#ffffff',
@@ -355,5 +307,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#64748b',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#ef4444',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
