@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { View } from 'react-native';
 import { Redirect, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { supabase } from '@/lib/supabase';
@@ -19,21 +20,29 @@ export default function RootLayout() {
     window.frameworkReady?.();
   }, []);
 
-  if (loading) {
-    return null;
-  }
-
   return (
-    <>
-      {!session ? (
-        <Redirect href="/auth/sign-in" />
-      ) : (
-        <Stack screenOptions={{ headerShown: false }}>
+    <View style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        {loading ? (
+          // Render an empty screen while loading
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      )}
+        ) : !session ? (
+          // Redirect to sign in if no session
+          <Stack.Screen 
+            name="auth/sign-in" 
+            options={{ 
+              headerShown: false,
+            }} 
+          />
+        ) : (
+          // Render main app tabs if authenticated
+          <>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="+not-found" />
+          </>
+        )}
+      </Stack>
       <StatusBar style="auto" />
-    </>
+    </View>
   );
 }
