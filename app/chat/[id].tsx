@@ -39,9 +39,14 @@ export default function ChatScreen() {
         .from('chats')
         .select('*, lawyer:lawyers(*)')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (chatError) throw chatError;
+      
+      if (!chatData) {
+        setError('Chat not found');
+        return;
+      }
 
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
@@ -52,8 +57,8 @@ export default function ChatScreen() {
       if (messagesError) throw messagesError;
 
       setMessages(messagesData || []);
-    } catch (err) {
-      setError('Failed to load messages');
+    } catch (err: any) {
+      setError(err.message || 'Failed to load messages');
       console.error('Error:', err);
     } finally {
       setLoading(false);
@@ -79,9 +84,9 @@ export default function ChatScreen() {
 
       setNewMessage('');
       scrollViewRef.current?.scrollToEnd({ animated: true });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error sending message:', err);
-      setError('Failed to send message');
+      setError(err.message || 'Failed to send message');
     }
   };
 
@@ -96,10 +101,27 @@ export default function ChatScreen() {
   if (error) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchMessages}>
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
+        <View style={styles.navigationHeader}>
+          <TouchableOpacity 
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.push('/');
+              }
+            }}
+            style={styles.backButton}
+          >
+            <ArrowLeft size={24} color="#1e293b" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Error</Text>
+        </View>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchMessages}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -288,6 +310,12 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.5,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   errorText: {
     color: '#ef4444',
