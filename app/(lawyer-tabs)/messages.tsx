@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
@@ -35,28 +35,20 @@ export default function LawyerMessages() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Get all chats with latest message for each chat
-      const { data, error: chatsError } = await supabase
+      // First get all chats for the lawyer
+      const { data: chatsData, error: chatsError } = await supabase
         .from('chats')
-        .select(`
-          *,
-          messages (
-            id,
-            content,
-            created_at,
-            sender_id
-          )
-        `)
+        .select('*, messages(*)')
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
-console.log("chats for:", user.id, " here: ", data);
+
       if (chatsError) throw chatsError;
 
       // Process chats to include only the latest message
-      const processedChats = data?.map(chat => ({
+      const processedChats = (chatsData || []).map(chat => ({
         ...chat,
         latest_message: chat.messages?.[0] || null
-      })) || [];
+      }));
 
       setChats(processedChats);
     } catch (err: any) {
@@ -117,12 +109,12 @@ console.log("chats for:", user.id, " here: ", data);
               <TouchableOpacity style={styles.chatCard}>
                 <View style={styles.userAvatar}>
                   <Text style={styles.userInitial}>
-                    {chat.users?.email?.[0]?.toUpperCase() || '?'}
+                    {chat.user_id?.[0]?.toUpperCase() || '?'}
                   </Text>
                 </View>
                 <View style={styles.chatInfo}>
                   <View style={styles.chatHeader}>
-                    <Text style={styles.userName}>{chat.users?.email || 'User'}</Text>
+                    <Text style={styles.userName}>Client #{chat.user_id.slice(0, 8)}</Text>
                     <Text style={styles.timestamp}>
                       {new Date(chat.created_at).toLocaleDateString()}
                     </Text>
