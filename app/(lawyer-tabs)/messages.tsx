@@ -39,7 +39,7 @@ export default function LawyerMessages() {
         .from('chats')
         .select(`
           *,
-          user:users!chats_user_id_fkey(*),
+          lawyer:lawyers!chats_user_id_fkey(*),
           latest_message:messages(
             content,
             created_at,
