@@ -26,6 +26,7 @@ export default function LawyerProfile() {
   const [lawyer, setLawyer] = useState<Lawyer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [creatingChat, setCreatingChat] = useState(false);
 
   useEffect(() => {
     fetchLawyer();
@@ -49,6 +50,50 @@ export default function LawyerProfile() {
       console.error('Error fetching lawyer:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStartChat = async () => {
+    try {
+      setCreatingChat(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        router.push('/auth/sign-in');
+        return;
+      }
+
+      // Check if chat already exists
+      const { data: existingChat } = await supabase
+        .from('chats')
+        .select('id')
+        .eq('lawyer_id', id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingChat) {
+        router.push(`/chat/${existingChat.id}`);
+        return;
+      }
+
+      // Create new chat
+      const { data: newChat, error: chatError } = await supabase
+        .from('chats')
+        .insert({
+          lawyer_id: id,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (chatError) throw chatError;
+
+      router.push(`/chat/${newChat.id}`);
+    } catch (err) {
+      console.error('Error creating chat:', err);
+      setError('Failed to start chat. Please try again.');
+    } finally {
+      setCreatingChat(false);
     }
   };
 
@@ -145,12 +190,16 @@ export default function LawyerProfile() {
         </View>
 
         <View style={styles.actionButtons}>
-          <Link href={`/chat/${lawyer.id}`} style={Platform.select({ web: { textDecoration: 'none' } })}>
-            <TouchableOpacity style={[styles.button, styles.messageButton]}>
-              <MessageSquare size={20} color="#ffffff" />
-              <Text style={styles.buttonText}>Start Chat</Text>
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity 
+            style={[styles.button, styles.messageButton, creatingChat && styles.buttonDisabled]}
+            onPress={handleStartChat}
+            disabled={creatingChat}
+          >
+            <MessageSquare size={20} color="#ffffff" />
+            <Text style={styles.buttonText}>
+              {creatingChat ? 'Starting Chat...' : 'Start Chat'}
+            </Text>
+          </TouchableOpacity>
           <Link href={`/book/${lawyer.id}`} style={Platform.select({ web: { textDecoration: 'none' } })}>
             <TouchableOpacity style={[styles.button, styles.scheduleButton]}>
               <Calendar size={20} color="#ffffff" />
@@ -295,6 +344,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   messageButton: {
     backgroundColor: '#2563eb',
