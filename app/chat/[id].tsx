@@ -27,6 +27,9 @@ export default function ChatScreen() {
         filter: `chat_id=eq.${id}`,
       }, (payload) => {
         setMessages(prev => [...prev, payload.new]);
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
       })
       .subscribe();
 
@@ -76,18 +79,28 @@ export default function ChatScreen() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('Not authenticated');
 
-      const { error: insertError } = await supabase
+      const messageToSend = {
+        chat_id: id,
+        sender_id: userData.user.id,
+        content: newMessage.trim(),
+      };
+
+      const { data: newMessage_, error: insertError } = await supabase
         .from('messages')
-        .insert({
-          chat_id: id,
-          sender_id: userData.user.id,
-          content: newMessage.trim(),
-        });
+        .insert(messageToSend)
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
+      // Update local messages state immediately
+      setMessages(prev => [...prev, newMessage_]);
       setNewMessage('');
-      scrollViewRef.current?.scrollToEnd({ animated: true });
+      
+      // Scroll to bottom
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     } catch (err: any) {
       console.error('Error sending message:', err);
       setError(err.message || 'Failed to send message');
@@ -99,7 +112,24 @@ export default function ChatScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text>Loading messages...</Text>
+        <View style={styles.navigationHeader}>
+          <TouchableOpacity 
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.push('/');
+              }
+            }}
+            style={styles.backButton}
+          >
+            <ArrowLeft size={24} color="#1e293b" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Loading...</Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading messages...</Text>
+        </View>
       </View>
     );
   }
@@ -160,31 +190,37 @@ export default function ChatScreen() {
         contentContainerStyle={styles.messagesContent}
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
       >
-        {messages.map((message) => {
-          const isUser = message.sender_id === supabase.auth.getUser()?.data?.user?.id;
-          return (
-            <View
-              key={message.id}
-              style={[
-                styles.messageBubble,
-                isUser ? styles.userMessage : styles.lawyerMessage,
-              ]}
-            >
-              <Text style={[
-                styles.messageText,
-                isUser ? styles.userMessageText : styles.lawyerMessageText,
-              ]}>
-                {message.content}
-              </Text>
-              <Text style={[
-                styles.timestamp,
-                isUser ? styles.userTimestamp : styles.lawyerTimestamp,
-              ]}>
-                {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </Text>
-            </View>
-          );
-        })}
+        {messages.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No messages yet. Start the conversation!</Text>
+          </View>
+        ) : (
+          messages.map((message) => {
+            const isUser = message.sender_id === supabase.auth.getUser()?.data?.user?.id;
+            return (
+              <View
+                key={message.id}
+                style={[
+                  styles.messageBubble,
+                  isUser ? styles.userMessage : styles.lawyerMessage,
+                ]}
+              >
+                <Text style={[
+                  styles.messageText,
+                  isUser ? styles.userMessageText : styles.lawyerMessageText,
+                ]}>
+                  {message.content}
+                </Text>
+                <Text style={[
+                  styles.timestamp,
+                  isUser ? styles.userTimestamp : styles.lawyerTimestamp,
+                ]}>
+                  {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </View>
+            );
+          })
+        )}
       </ScrollView>
 
       <View style={styles.inputContainer}>
@@ -339,5 +375,25 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#64748b',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#64748b',
+    textAlign: 'center',
   },
 });
