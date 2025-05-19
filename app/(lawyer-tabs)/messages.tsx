@@ -1,99 +1,146 @@
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { router } from 'expo-router';
-import { Briefcase, Search } from 'lucide-react-native';
-import { supabase } from '@/lib/supabase';
 import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform } from 'react-native';
+import { Link } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
-export default function UserType() {
-  const [loading, setLoading] = useState(false);
+export default function LawyerMessages() {
+  const [chats, setChats] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleUserTypeSelection = async (type: 'client' | 'lawyer') => {
-    if (type === 'client') {
-      router.replace('/(client-tabs)');
-      return;
-    }
+  useEffect(() => {
+    fetchChats();
 
+    // Subscribe to new messages
+    const subscription = supabase
+      .channel('messages')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+      }, () => {
+        // Refresh chats when new message is received
+        fetchChats();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchChats = async () => {
     try {
-      setLoading(true);
-      setError(null);
-
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Check if lawyer profile exists
-      const { data: lawyer, error: lawyerError } = await supabase
-        .from('lawyers')
-        .select('validation_status')
-        .eq('id', user.id)
-        .maybeSingle();
+      // Get all chats with user details and latest message
+      const { data, error: chatsError } = await supabase
+        .from('chats')
+        .select(`
+          *,
+          lawyer:lawyers!chats_lawyer_id_fkey(*),
+          latest_message:messages(
+            content,
+            created_at,
+            sender_id
+          )
+        `)
+        .eq('lawyer_id', user.id)
+        .order('created_at', { ascending: false });
 
-      if (lawyerError) throw lawyerError;
+      if (chatsError) throw chatsError;
 
-      if (!lawyer) {
-        // No profile exists, go to validation screen
-        router.replace('/auth/lawyer-validation');
-      } else if (lawyer.validation_status === 'approved') {
-        // Lawyer is approved, go to lawyer dashboard
-        router.replace('/(lawyer-tabs)');
-      } else if (lawyer.validation_status === 'rejected') {
-        // Show error message for rejected lawyers
-        setError('Your lawyer profile has been rejected. Please contact support for more information.');
-      } else {
-        // Show pending message for pending validation
-        setError('Your lawyer profile is pending verification. Please check back later.');
-      }
+      // Process the data to include only the latest message
+      const processedChats = data?.map(chat => ({
+        ...chat,
+        latest_message: chat.latest_message?.[0] || null
+      })) || [];
+
+      setChats(processedChats);
     } catch (err: any) {
-      console.error('Error checking lawyer status:', err);
       setError(err.message);
+      console.error('Error fetching chats:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Messages</Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading chats...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Messages</Text>
+        </View>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchChats}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image 
-          source={require('../../assets/images/logo2.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.title}>Choose Your Role</Text>
-        <Text style={styles.subtitle}>Select how you want to use the app</Text>
+        <Text style={styles.title}>Messages</Text>
       </View>
 
-      {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      )}
-
-      <View style={styles.optionsContainer}>
-        <TouchableOpacity
-          style={styles.option}
-          onPress={() => handleUserTypeSelection('client')}
-          disabled={loading}
-        >
-          <Search size={40} color="#7C3AED" />
-          <Text style={styles.optionTitle}>Looking for a Lawyer</Text>
-          <Text style={styles.optionDescription}>
-            Find and connect with legal professionals
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.option, loading && styles.optionDisabled]}
-          onPress={() => handleUserTypeSelection('lawyer')}
-          disabled={loading}
-        >
-          <Briefcase size={40} color="#7C3AED" />
-          <Text style={styles.optionTitle}>I am a Lawyer</Text>
-          <Text style={styles.optionDescription}>
-            {loading ? 'Checking status...' : 'Offer your legal services to clients'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ScrollView style={styles.chatsList}>
+        {chats.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No messages yet</Text>
+          </View>
+        ) : (
+          chats.map((chat) => (
+            <Link 
+              key={chat.id} 
+              href={`/chat/${chat.id}`}
+              style={Platform.select({ web: { textDecoration: 'none' } })}
+            >
+              <TouchableOpacity style={styles.chatCard}>
+                <Image 
+                  source={{ uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg' }} 
+                  style={styles.userImage} 
+                />
+                <View style={styles.chatInfo}>
+                  <Text style={styles.userName}>{chat.user?.email || 'User'}</Text>
+                  {chat.latest_message ? (
+                    <>
+                      <Text style={styles.lastMessage} numberOfLines={1}>
+                        {chat.latest_message.content}
+                      </Text>
+                      <Text style={styles.timestamp}>
+                        {new Date(chat.latest_message.created_at).toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={styles.lastMessage}>No messages yet</Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            </Link>
+          ))
+        )}
+      </ScrollView>
     </View>
   );
 }
@@ -101,66 +148,101 @@ export default function UserType() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    padding: 20,
+    backgroundColor: '#f8fafc',
   },
   header: {
-    alignItems: 'center',
-    marginTop: 60,
-    marginBottom: 20,
-  },
-  logo: {
-    width: 200,
-    height: 50,
-    marginBottom: 24,
+    padding: 20,
+    paddingTop: 60,
+    backgroundColor: '#ffffff',
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: '#1e293b',
-    marginBottom: 8,
   },
-  subtitle: {
+  chatsList: {
+    padding: 20,
+  },
+  chatCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  userImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginRight: 16,
+  },
+  chatInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  lastMessage: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
     fontSize: 16,
     color: '#64748b',
-    textAlign: 'center',
   },
   errorContainer: {
-    backgroundColor: '#fee2e2',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   errorText: {
     color: '#ef4444',
-    fontSize: 14,
+    fontSize: 16,
     textAlign: 'center',
+    marginBottom: 16,
   },
-  optionsContainer: {
+  retryButton: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  emptyContainer: {
     flex: 1,
     justifyContent: 'center',
-    gap: 20,
-  },
-  option: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#e2e8f0',
+    paddingTop: 40,
   },
-  optionDisabled: {
-    opacity: 0.7,
-  },
-  optionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1e293b',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  optionDescription: {
-    fontSize: 14,
+  emptyText: {
+    fontSize: 16,
     color: '#64748b',
     textAlign: 'center',
   },
