@@ -26,6 +26,7 @@ export default function RootLayout() {
   useEffect(() => {
     async function checkLawyerStatus() {
       if (!session?.user) {
+        setIsLawyer(null);
         setCheckingStatus(false);
         return;
       }
@@ -33,9 +34,9 @@ export default function RootLayout() {
       try {
         const { data, error } = await supabase
           .from('lawyers')
-          .select('id, validation_status')
+          .select('id')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (error && error.code !== 'PGRST116') throw error;
         setIsLawyer(!!data);
@@ -64,7 +65,7 @@ export default function RootLayout() {
               headerShown: false,
             }} 
           />
-        ) : isLawyer ? (
+        ) : isLawyer === true ? (
           <Stack.Screen name="(lawyer-tabs)" />
         ) : (
           <>
@@ -73,7 +74,6 @@ export default function RootLayout() {
             <Stack.Screen name="(client-tabs)" />
           </>
         )}
-        <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
     </View>

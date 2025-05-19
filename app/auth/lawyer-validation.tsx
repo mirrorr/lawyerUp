@@ -21,10 +21,19 @@ export default function LawyerValidation() {
       setLoading(true);
       setError(null);
 
+      // Validate required fields
+      const requiredFields = ['name', 'specialty', 'licenseNumber', 'experience', 'education', 'languages'];
+      const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const lawyerData = {
+        id: user.id,
         name: formData.name,
         specialty: formData.specialty,
         license_number: formData.licenseNumber,
@@ -43,18 +52,12 @@ export default function LawyerValidation() {
 
       const { error: upsertError } = await supabase
         .from('lawyers')
-        .upsert({
-          id: user.id,
-          ...lawyerData
-        });
+        .upsert(lawyerData);
 
       if (upsertError) throw upsertError;
 
-      // Redirect to lawyer tabs and force a reload to update the lawyer status
-      router.replace('/(lawyer-tabs)');
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      // Force a reload to update the lawyer status and trigger proper routing
+      window.location.href = '/(lawyer-tabs)';
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -80,7 +83,7 @@ export default function LawyerValidation() {
 
       <View style={styles.form}>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Full Name</Text>
+          <Text style={styles.label}>Full Name *</Text>
           <TextInput
             style={styles.input}
             value={formData.name}
@@ -90,7 +93,7 @@ export default function LawyerValidation() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Specialty</Text>
+          <Text style={styles.label}>Specialty *</Text>
           <TextInput
             style={styles.input}
             value={formData.specialty}
@@ -100,7 +103,7 @@ export default function LawyerValidation() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>License Number</Text>
+          <Text style={styles.label}>License Number *</Text>
           <TextInput
             style={styles.input}
             value={formData.licenseNumber}
@@ -110,7 +113,7 @@ export default function LawyerValidation() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Years of Experience</Text>
+          <Text style={styles.label}>Years of Experience *</Text>
           <TextInput
             style={styles.input}
             value={formData.experience}
@@ -120,7 +123,7 @@ export default function LawyerValidation() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Education</Text>
+          <Text style={styles.label}>Education *</Text>
           <TextInput
             style={styles.input}
             value={formData.education}
@@ -130,7 +133,7 @@ export default function LawyerValidation() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Languages</Text>
+          <Text style={styles.label}>Languages *</Text>
           <TextInput
             style={styles.input}
             value={formData.languages}
