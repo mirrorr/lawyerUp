@@ -1,6 +1,6 @@
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform } from 'react-native';
 import { Link } from 'expo-router';
-import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function LawyerMessages() {
@@ -10,6 +10,23 @@ export default function LawyerMessages() {
 
   useEffect(() => {
     fetchChats();
+
+    // Subscribe to new messages
+    const subscription = supabase
+      .channel('messages')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+      }, () => {
+        // Refresh chats when new message is received
+        fetchChats();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchChats = async () => {
@@ -17,19 +34,33 @@ export default function LawyerMessages() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Get all chats with user details and latest message
       const { data, error: chatsError } = await supabase
         .from('chats')
         .select(`
           *,
-          lawyer:lawyers(*)
+          user:users!chats_user_id_fkey(*),
+          latest_message:messages(
+            content,
+            created_at,
+            sender_id
+          )
         `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
 
       if (chatsError) throw chatsError;
-      setChats(data || []);
+
+      // Process the data to include only the latest message
+      const processedChats = data?.map(chat => ({
+        ...chat,
+        latest_message: chat.latest_message?.[0] || null
+      })) || [];
+
+      setChats(processedChats);
     } catch (err: any) {
       setError(err.message);
+      console.error('Error fetching chats:', err);
     } finally {
       setLoading(false);
     }
@@ -84,14 +115,26 @@ export default function LawyerMessages() {
             >
               <TouchableOpacity style={styles.chatCard}>
                 <Image 
-                  source={{ uri: chat.lawyer?.image_url || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg' }} 
+                  source={{ uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg' }} 
                   style={styles.userImage} 
                 />
                 <View style={styles.chatInfo}>
-                  <Text style={styles.userName}>{chat.lawyer?.name || 'Lawyer'}</Text>
-                  <Text style={styles.lastMessage} numberOfLines={1}>
-                    Tap to view conversation
-                  </Text>
+                  <Text style={styles.userName}>{chat.user?.email || 'User'}</Text>
+                  {chat.latest_message ? (
+                    <>
+                      <Text style={styles.lastMessage} numberOfLines={1}>
+                        {chat.latest_message.content}
+                      </Text>
+                      <Text style={styles.timestamp}>
+                        {new Date(chat.latest_message.created_at).toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={styles.lastMessage}>No messages yet</Text>
+                  )}
                 </View>
               </TouchableOpacity>
             </Link>
@@ -154,6 +197,11 @@ const styles = StyleSheet.create({
   lastMessage: {
     fontSize: 14,
     color: '#64748b',
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,
