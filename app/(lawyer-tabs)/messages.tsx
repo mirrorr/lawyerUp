@@ -37,6 +37,7 @@ export default function LawyerMessages() {
       
 
       // Get all chats with user details and latest message
+      console.log("testt:", user.id);
       const { data, error: chatsError } = await supabase
         .from('chats')
         .select(`
