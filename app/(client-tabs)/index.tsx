@@ -182,7 +182,10 @@ export default function FindLawyers() {
           </TouchableOpacity>
 
           {showSortMenu && (
-            <View style={styles.sortMenu}>
+            <View style={[
+              styles.sortMenu,
+              Platform.OS === 'web' && styles.sortMenuWeb
+            ]}>
               {sortOptions.map((option) => (
                 <TouchableOpacity
                   key={option.value}
@@ -356,6 +359,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
     position: 'relative',
+    zIndex: 1000,
   },
   sortButton: {
     flexDirection: 'row',
@@ -386,7 +390,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
+  },
+  sortMenuWeb: {
+    position: 'absolute',
     zIndex: 1000,
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
   },
   sortOption: {
     padding: 12,
