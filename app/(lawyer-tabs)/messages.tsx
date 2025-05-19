@@ -31,19 +31,24 @@ export default function LawyerMessages() {
 
   const fetchChats = async () => {
     try {
+      setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Get all chats with user details and latest message
+      // Get all chats with latest message for each chat
       const { data, error: chatsError } = await supabase
         .from('chats')
         .select(`
           *,
-          lawyer:lawyers!chats_lawyer_id_fkey(*),
-          latest_message:messages(
+          messages (
+            id,
             content,
             created_at,
             sender_id
+          ),
+          users!chats_user_id_fkey (
+            id,
+            email
           )
         `)
         .eq('lawyer_id', user.id)
@@ -51,10 +56,10 @@ export default function LawyerMessages() {
 
       if (chatsError) throw chatsError;
 
-      // Process the data to include only the latest message
+      // Process chats to include only the latest message
       const processedChats = data?.map(chat => ({
         ...chat,
-        latest_message: chat.latest_message?.[0] || null
+        latest_message: chat.messages?.[0] || null
       })) || [];
 
       setChats(processedChats);
@@ -114,27 +119,21 @@ export default function LawyerMessages() {
               style={Platform.select({ web: { textDecoration: 'none' } })}
             >
               <TouchableOpacity style={styles.chatCard}>
-                <Image 
-                  source={{ uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg' }} 
-                  style={styles.userImage} 
-                />
+                <View style={styles.userAvatar}>
+                  <Text style={styles.userInitial}>
+                    {chat.users?.email?.[0]?.toUpperCase() || '?'}
+                  </Text>
+                </View>
                 <View style={styles.chatInfo}>
-                  <Text style={styles.userName}>{chat.user?.email || 'User'}</Text>
-                  {chat.latest_message ? (
-                    <>
-                      <Text style={styles.lastMessage} numberOfLines={1}>
-                        {chat.latest_message.content}
-                      </Text>
-                      <Text style={styles.timestamp}>
-                        {new Date(chat.latest_message.created_at).toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </Text>
-                    </>
-                  ) : (
-                    <Text style={styles.lastMessage}>No messages yet</Text>
-                  )}
+                  <View style={styles.chatHeader}>
+                    <Text style={styles.userName}>{chat.users?.email || 'User'}</Text>
+                    <Text style={styles.timestamp}>
+                      {new Date(chat.created_at).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <Text style={styles.lastMessage} numberOfLines={1}>
+                    {chat.latest_message ? chat.latest_message.content : 'No messages yet'}
+                  </Text>
                 </View>
               </TouchableOpacity>
             </Link>
@@ -154,6 +153,8 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 60,
     backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
   },
   title: {
     fontSize: 28,
@@ -179,29 +180,41 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  userImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  userAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#e2e8f0',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
+  },
+  userInitial: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#64748b',
   },
   chatInfo: {
     flex: 1,
+  },
+  chatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   userName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1e293b',
-    marginBottom: 4,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#64748b',
   },
   lastMessage: {
     fontSize: 14,
     color: '#64748b',
-  },
-  timestamp: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,
