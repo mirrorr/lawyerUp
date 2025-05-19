@@ -45,10 +45,6 @@ export default function LawyerMessages() {
             content,
             created_at,
             sender_id
-          ),
-          users!chats_user_id_fkey (
-            id,
-            email
           )
         `)
         .eq('lawyer_id', user.id)
