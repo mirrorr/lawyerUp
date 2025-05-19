@@ -9,10 +9,20 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSignUp = async () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Validate email format
+      if (!validateEmail(email)) {
+        throw new Error('Please enter a valid email address');
+      }
 
       const { error } = await supabase.auth.signUp({
         email,
@@ -52,6 +62,7 @@ export default function SignUp() {
             placeholder="Enter your email"
             autoCapitalize="none"
             keyboardType="email-address"
+            autoComplete="email"
           />
         </View>
 
@@ -63,6 +74,7 @@ export default function SignUp() {
             onChangeText={setPassword}
             placeholder="Choose a password"
             secureTextEntry
+            autoComplete="new-password"
           />
         </View>
 
