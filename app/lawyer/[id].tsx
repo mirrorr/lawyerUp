@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Platform, TextInput } from 'react-native';
 import { useLocalSearchParams, Link, useRouter } from 'expo-router';
 import { MapPin, Star, MessageSquare, Calendar, Clock, Briefcase, Award, Globe, ArrowLeft } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
+
+interface Review {
+  id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  user_id: string;
+}
 
 interface Lawyer {
   id: string;
@@ -24,12 +32,20 @@ export default function LawyerProfile() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [lawyer, setLawyer] = useState<Lawyer | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [creatingChat, setCreatingChat] = useState(false);
+  const [userReview, setUserReview] = useState<Review | null>(null);
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [canReview, setCanReview] = useState(false);
 
   useEffect(() => {
     fetchLawyer();
+    fetchReviews();
+    checkReviewEligibility();
   }, [id]);
 
   const fetchLawyer = async () => {
@@ -50,6 +66,89 @@ export default function LawyerProfile() {
       console.error('Error fetching lawyer:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('lawyer_id', id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setReviews(data || []);
+
+      if (user) {
+        const userReview = data?.find(review => review.user_id === user.id);
+        if (userReview) {
+          setUserReview(userReview);
+          setNewRating(userReview.rating);
+          setNewComment(userReview.comment || '');
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+    }
+  };
+
+  const checkReviewEligibility = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: chat } = await supabase
+        .from('chats')
+        .select('id')
+        .eq('lawyer_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      setCanReview(!!chat);
+    } catch (err) {
+      console.error('Error checking review eligibility:', err);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    try {
+      setSubmittingReview(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      if (newRating < 1 || newRating > 5) {
+        throw new Error('Rating must be between 1 and 5');
+      }
+
+      const review = {
+        lawyer_id: id,
+        user_id: user.id,
+        rating: newRating,
+        comment: newComment.trim(),
+      };
+
+      const { error } = userReview
+        ? await supabase
+            .from('reviews')
+            .update(review)
+            .eq('id', userReview.id)
+        : await supabase
+            .from('reviews')
+            .insert(review);
+
+      if (error) throw error;
+
+      // Refresh reviews and lawyer data
+      await Promise.all([fetchReviews(), fetchLawyer()]);
+    } catch (err: any) {
+      console.error('Error submitting review:', err);
+      setError(err.message);
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -103,6 +202,26 @@ export default function LawyerProfile() {
     } else {
       router.push('/');
     }
+  };
+
+  const renderStars = (rating: number, interactive = false) => {
+    return (
+      <View style={styles.starsContainer}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity
+            key={star}
+            onPress={() => interactive && setNewRating(star)}
+            disabled={!interactive}
+          >
+            <Star
+              size={interactive ? 32 : 16}
+              color="#fbbf24"
+              fill={star <= rating ? '#fbbf24' : 'transparent'}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   if (loading) {
@@ -160,8 +279,8 @@ export default function LawyerProfile() {
               <Text style={styles.location}>{lawyer.location}</Text>
             </View>
             <View style={styles.ratingContainer}>
-              <Star size={16} color="#fbbf24" fill="#fbbf24" />
-              <Text style={styles.rating}>{lawyer.rating}</Text>
+              {renderStars(lawyer.rating)}
+              <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
               <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
             </View>
           </View>
@@ -195,6 +314,66 @@ export default function LawyerProfile() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
           <Text style={styles.about}>{lawyer.about}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Reviews</Text>
+          
+          {canReview && (
+            <View style={styles.reviewForm}>
+              <Text style={styles.reviewFormTitle}>
+                {userReview ? 'Update Your Review' : 'Write a Review'}
+              </Text>
+              <View style={styles.ratingInput}>
+                {renderStars(newRating, true)}
+              </View>
+              <TextInput
+                style={styles.commentInput}
+                value={newComment}
+                onChangeText={setNewComment}
+                placeholder="Write your review here..."
+                multiline
+                numberOfLines={4}
+              />
+              <TouchableOpacity
+                style={[styles.submitButton, submittingReview && styles.buttonDisabled]}
+                onPress={handleSubmitReview}
+                disabled={submittingReview || newRating === 0}
+              >
+                <Text style={styles.submitButtonText}>
+                  {submittingReview ? 'Submitting...' : userReview ? 'Update Review' : 'Submit Review'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <View key={review.id} style={styles.reviewCard}>
+                <View style={styles.reviewHeader}>
+                  <View style={styles.reviewerAvatar}>
+                    <Text style={styles.reviewerInitial}>
+                      {review.user_id[0].toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={styles.reviewInfo}>
+                    <Text style={styles.reviewerName}>
+                      Client #{review.user_id.slice(0, 8)}
+                    </Text>
+                    <Text style={styles.reviewDate}>
+                      {new Date(review.created_at).toLocaleDateString()}
+                    </Text>
+                  </View>
+                </View>
+                {renderStars(review.rating)}
+                {review.comment && (
+                  <Text style={styles.reviewComment}>{review.comment}</Text>
+                )}
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noReviews}>No reviews yet</Text>
+          )}
         </View>
 
         <View style={styles.actionButtons}>
@@ -289,6 +468,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  starsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   rating: {
     fontSize: 14,
     fontWeight: '600',
@@ -338,6 +522,97 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#334155',
     lineHeight: 24,
+  },
+  reviewForm: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  reviewFormTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 12,
+  },
+  ratingInput: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  commentInput: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#1e293b',
+    minHeight: 100,
+    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  submitButton: {
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  submitButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  reviewCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  reviewerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#e2e8f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  reviewerInitial: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#64748b',
+  },
+  reviewInfo: {
+    flex: 1,
+  },
+  reviewerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 2,
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  reviewComment: {
+    fontSize: 14,
+    color: '#334155',
+    marginTop: 8,
+    lineHeight: 20,
+  },
+  noReviews: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    padding: 20,
   },
   actionButtons: {
     padding: 20,
