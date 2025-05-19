@@ -97,11 +97,19 @@ export default function LawyerProfile() {
     }
   };
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push('/');
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
         <View style={styles.navigationHeader}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color="#1e293b" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Lawyer Profile</Text>
@@ -117,7 +125,7 @@ export default function LawyerProfile() {
     return (
       <View style={styles.container}>
         <View style={styles.navigationHeader}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color="#1e293b" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Lawyer Profile</Text>
@@ -135,7 +143,7 @@ export default function LawyerProfile() {
   return (
     <View style={styles.container}>
       <View style={styles.navigationHeader}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <ArrowLeft size={24} color="#1e293b" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Lawyer Profile</Text>
