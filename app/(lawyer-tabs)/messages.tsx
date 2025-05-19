@@ -36,7 +36,7 @@ export default function LawyerMessages() {
       if (!user) throw new Error('Not authenticated');
 
       // First get all chats for the lawyer
-      const { data, error: chatsError } = await supabase
+      const { data: chatsData, error: chatsError } = await supabase
         .from('chats')
         .select(`
           *,
