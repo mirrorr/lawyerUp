@@ -8,6 +8,7 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,10 +19,16 @@ export default function SignUp() {
     try {
       setLoading(true);
       setError(null);
+      setSuccess(false);
 
       // Validate email format
       if (!validateEmail(email)) {
         throw new Error('Please enter a valid email address');
+      }
+
+      // Validate password
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
       }
 
       const { error } = await supabase.auth.signUp({
@@ -31,14 +38,29 @@ export default function SignUp() {
 
       if (error) throw error;
 
-      // Redirect to user type selection after successful sign-up
-      router.replace('/auth/user-type');
+      setSuccess(true);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Check Your Email</Text>
+          <Text style={styles.subtitle}>
+            We've sent you a confirmation email. Please check your inbox and click the confirmation link to complete your registration.
+          </Text>
+        </View>
+        <Link href="/auth/sign-in" style={styles.link}>
+          <Text style={styles.linkText}>Return to Sign In</Text>
+        </Link>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
