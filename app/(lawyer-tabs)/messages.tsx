@@ -52,7 +52,7 @@ export default function LawyerMessages() {
         .order('created_at', { ascending: false });
 */
       if (chatsError) throw chatsError;
-
+console.log("chats:", chatsData);
       // Process chats to include only the latest message
       const processedChats = (chatsData || []).map(chat => ({
         ...chat,
