@@ -31,7 +31,8 @@ export default function SignUp() {
 
       if (error) throw error;
 
-      router.replace('/(tabs)');
+      // Redirect to user type selection after successful sign-up
+      router.replace('/auth/user-type');
     } catch (err: any) {
       setError(err.message);
     } finally {
