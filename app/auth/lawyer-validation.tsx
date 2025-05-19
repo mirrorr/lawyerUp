@@ -24,28 +24,48 @@ export default function LawyerValidation() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Create lawyer profile
-      const { error: profileError } = await supabase
+      // Check if lawyer profile already exists
+      const { data: existingProfile } = await supabase
         .from('lawyers')
-        .insert({
-          id: user.id,
-          name: formData.name,
-          specialty: formData.specialty,
-          license_number: formData.licenseNumber,
-          experience: formData.experience,
-          education: formData.education,
-          languages: formData.languages.split(',').map(lang => lang.trim()),
-          image_url: 'https://images.pexels.com/photos/5668770/pexels-photo-5668770.jpeg',
-          location: 'Not specified',
-          about: 'Professional lawyer with extensive experience.',
-          consultation_fee: 'Contact for details',
-          availability: 'Available',
-          rating: 0,
-          reviews_count: 0,
-          validation_status: 'pending'
-        });
+        .select('id')
+        .eq('id', user.id)
+        .single();
 
-      if (profileError) throw profileError;
+      const lawyerData = {
+        name: formData.name,
+        specialty: formData.specialty,
+        license_number: formData.licenseNumber,
+        experience: formData.experience,
+        education: formData.education,
+        languages: formData.languages.split(',').map(lang => lang.trim()),
+        image_url: 'https://images.pexels.com/photos/5668770/pexels-photo-5668770.jpeg',
+        location: 'Not specified',
+        about: 'Professional lawyer with extensive experience.',
+        consultation_fee: 'Contact for details',
+        availability: 'Available',
+        rating: 0,
+        reviews_count: 0,
+        validation_status: 'pending'
+      };
+
+      let error;
+      if (existingProfile) {
+        // Update existing profile
+        ({ error } = await supabase
+          .from('lawyers')
+          .update(lawyerData)
+          .eq('id', user.id));
+      } else {
+        // Create new profile
+        ({ error } = await supabase
+          .from('lawyers')
+          .insert({
+            id: user.id,
+            ...lawyerData
+          }));
+      }
+
+      if (error) throw error;
 
       router.replace('/(lawyer-tabs)');
     } catch (err: any) {
