@@ -20,26 +20,31 @@ export default function RootLayout() {
     window.frameworkReady?.();
   }, []);
 
-  // Show nothing while checking authentication
-  if (loading) {
-    return null;
-  }
-
-  // If no authenticated user, redirect to sign in
-  if (!session?.user) {
-    return <Redirect href="/auth/sign-in" />;
-  }
-
   return (
     <View style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="auth/sign-in" />
-        <Stack.Screen name="auth/sign-up" />
-        <Stack.Screen name="auth/user-type" />
-        <Stack.Screen name="auth/lawyer-validation" />
-        <Stack.Screen name="(client-tabs)" />
-        <Stack.Screen name="(lawyer-tabs)" />
-        <Stack.Screen name="+not-found" />
+        {loading ? (
+          // Show loading screen while checking auth
+          <Stack.Screen name="(loading)" options={{ headerShown: false }} />
+        ) : !session?.user ? (
+          // Redirect to sign in if no authenticated user
+          <Stack.Screen 
+            name="auth/sign-in"
+            options={{
+              headerShown: false,
+            }}
+          />
+        ) : (
+          // Show all other screens when authenticated
+          <>
+            <Stack.Screen name="auth/sign-up" />
+            <Stack.Screen name="auth/user-type" />
+            <Stack.Screen name="auth/lawyer-validation" />
+            <Stack.Screen name="(client-tabs)" />
+            <Stack.Screen name="(lawyer-tabs)" />
+            <Stack.Screen name="+not-found" />
+          </>
+        )}
       </Stack>
       <StatusBar style="auto" />
     </View>
