@@ -40,6 +40,7 @@ export default function LawyerMessages() {
       console.log("testt:", user.id);
       const { data, error: chatsError } = await supabase
         .from('chats')
+        .select(`*`)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
 
