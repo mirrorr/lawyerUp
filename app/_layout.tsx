@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { View } from 'react-native';
-import { Redirect, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,7 +33,7 @@ export default function RootLayout() {
       try {
         const { data, error } = await supabase
           .from('lawyers')
-          .select('id')
+          .select('id, validation_status')
           .eq('id', session.user.id)
           .single();
 
@@ -58,7 +58,6 @@ export default function RootLayout() {
     <View style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
         {!session ? (
-          // Not authenticated - show sign in
           <Stack.Screen 
             name="auth/sign-in" 
             options={{ 
@@ -66,10 +65,8 @@ export default function RootLayout() {
             }} 
           />
         ) : isLawyer ? (
-          // User is a lawyer - show lawyer tabs
           <Stack.Screen name="(lawyer-tabs)" />
         ) : (
-          // User is not a lawyer - show client flow
           <>
             <Stack.Screen name="auth/user-type" />
             <Stack.Screen name="auth/lawyer-validation" />

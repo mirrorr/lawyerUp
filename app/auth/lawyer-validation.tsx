@@ -50,8 +50,11 @@ export default function LawyerValidation() {
 
       if (upsertError) throw upsertError;
 
-      // Force reload the page to trigger the lawyer status check
-      window.location.href = '/(lawyer-tabs)';
+      // Redirect to lawyer tabs and force a reload to update the lawyer status
+      router.replace('/(lawyer-tabs)');
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } catch (err: any) {
       setError(err.message);
     } finally {
