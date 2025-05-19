@@ -125,6 +125,7 @@ export default function LawyerProfile() {
       }
 
       // First ensure user exists in users table
+      /*
       const { error: userError } = await supabase
         .from('users')
         .upsert({ id: user.id })
@@ -132,7 +133,7 @@ export default function LawyerProfile() {
         .single();
 
       if (userError) throw userError;
-
+      */
       const review = {
         lawyer_id: id,
         user_id: user.id,
