@@ -24,13 +24,6 @@ export default function LawyerValidation() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Check if lawyer profile already exists
-      const { data: existingProfile } = await supabase
-        .from('lawyers')
-        .select('id')
-        .eq('id', user.id)
-        .single();
-
       const lawyerData = {
         name: formData.name,
         specialty: formData.specialty,
@@ -48,26 +41,17 @@ export default function LawyerValidation() {
         validation_status: 'pending'
       };
 
-      let error;
-      if (existingProfile) {
-        // Update existing profile
-        ({ error } = await supabase
-          .from('lawyers')
-          .update(lawyerData)
-          .eq('id', user.id));
-      } else {
-        // Create new profile
-        ({ error } = await supabase
-          .from('lawyers')
-          .insert({
-            id: user.id,
-            ...lawyerData
-          }));
-      }
+      const { error: upsertError } = await supabase
+        .from('lawyers')
+        .upsert({
+          id: user.id,
+          ...lawyerData
+        });
 
-      if (error) throw error;
+      if (upsertError) throw upsertError;
 
-      router.replace('/(lawyer-tabs)');
+      // Force reload the page to trigger the lawyer status check
+      window.location.href = '/(lawyer-tabs)';
     } catch (err: any) {
       setError(err.message);
     } finally {

@@ -33,11 +33,11 @@ export default function RootLayout() {
       try {
         const { data, error } = await supabase
           .from('lawyers')
-          .select('id, validation_status')
+          .select('id')
           .eq('id', session.user.id)
           .single();
 
-        if (error) throw error;
+        if (error && error.code !== 'PGRST116') throw error;
         setIsLawyer(!!data);
       } catch (err) {
         console.error('Error checking lawyer status:', err);
@@ -58,6 +58,7 @@ export default function RootLayout() {
     <View style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
         {!session ? (
+          // Not authenticated - show sign in
           <Stack.Screen 
             name="auth/sign-in" 
             options={{ 
@@ -65,18 +66,17 @@ export default function RootLayout() {
             }} 
           />
         ) : isLawyer ? (
-          <>
-            <Stack.Screen name="(lawyer-tabs)" />
-            <Stack.Screen name="+not-found" />
-          </>
+          // User is a lawyer - show lawyer tabs
+          <Stack.Screen name="(lawyer-tabs)" />
         ) : (
+          // User is not a lawyer - show client flow
           <>
             <Stack.Screen name="auth/user-type" />
             <Stack.Screen name="auth/lawyer-validation" />
             <Stack.Screen name="(client-tabs)" />
-            <Stack.Screen name="+not-found" />
           </>
         )}
+        <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
     </View>
