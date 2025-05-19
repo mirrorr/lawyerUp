@@ -11,10 +11,13 @@ export default function ChatScreen() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     fetchMessages();
+    
+    // Subscribe to new messages
     const subscription = supabase
       .channel('messages')
       .on('postgres_changes', {
@@ -66,9 +69,10 @@ export default function ChatScreen() {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || sending) return;
 
     try {
+      setSending(true);
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('Not authenticated');
 
@@ -87,6 +91,8 @@ export default function ChatScreen() {
     } catch (err: any) {
       console.error('Error sending message:', err);
       setError(err.message || 'Failed to send message');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -193,10 +199,10 @@ export default function ChatScreen() {
         <TouchableOpacity 
           style={[
             styles.sendButton,
-            !newMessage.trim() && styles.sendButtonDisabled,
+            (!newMessage.trim() || sending) && styles.sendButtonDisabled,
           ]} 
           onPress={sendMessage}
-          disabled={!newMessage.trim()}
+          disabled={!newMessage.trim() || sending}
         >
           <Send size={20} color="#ffffff" />
         </TouchableOpacity>
