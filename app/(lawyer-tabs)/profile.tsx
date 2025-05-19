@@ -1,8 +1,36 @@
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
-import { useState, useEffect } from 'react';
+
+const menuItems = [
+  {
+    icon: Settings,
+    title: 'Account Settings',
+    route: '/settings',
+  },
+  {
+    icon: Bell,
+    title: 'Notifications',
+    route: '/notifications',
+  },
+  {
+    icon: Shield,
+    title: 'Privacy & Security',
+    route: '/privacy',
+  },
+  {
+    icon: CreditCard,
+    title: 'Payment Settings',
+    route: '/payment',
+  },
+  {
+    icon: HelpCircle,
+    title: 'Help & Support',
+    route: '/support',
+  },
+];
 
 export default function LawyerProfile() {
   const [profile, setProfile] = useState<any>(null);
@@ -15,6 +43,7 @@ export default function LawyerProfile() {
 
   const fetchProfile = async () => {
     try {
+      setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -28,6 +57,7 @@ export default function LawyerProfile() {
       setProfile(data);
     } catch (err: any) {
       setError(err.message);
+      console.error('Error fetching lawyer profile:', err);
     } finally {
       setLoading(false);
     }
@@ -81,7 +111,11 @@ export default function LawyerProfile() {
           />
           <Text style={styles.name}>{profile.name}</Text>
           <Text style={styles.specialty}>{profile.specialty}</Text>
-          <View style={styles.validationStatus}>
+          <View style={[
+            styles.validationStatus,
+            profile.validation_status === 'approved' && styles.approvedStatus,
+            profile.validation_status === 'rejected' && styles.rejectedStatus,
+          ]}>
             <Text style={[
               styles.validationText,
               profile.validation_status === 'approved' && styles.approvedText,
@@ -92,41 +126,46 @@ export default function LawyerProfile() {
           </View>
         </View>
 
+        <View style={styles.statsSection}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{profile.rating.toFixed(1)}</Text>
+            <Text style={styles.statLabel}>Rating</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{profile.reviews_count}</Text>
+            <Text style={styles.statLabel}>Reviews</Text>
+          </View>
+        </View>
+
+        <View style={styles.infoSection}>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Location</Text>
+            <Text style={styles.infoValue}>{profile.location}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Experience</Text>
+            <Text style={styles.infoValue}>{profile.experience}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Languages</Text>
+            <Text style={styles.infoValue}>{profile.languages.join(', ')}</Text>
+          </View>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>Education</Text>
+            <Text style={styles.infoValue}>{profile.education}</Text>
+          </View>
+        </View>
+
         <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuItemContent}>
-              <Settings size={20} color="#64748b" />
-              <Text style={styles.menuItemText}>Account Settings</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuItemContent}>
-              <Bell size={20} color="#64748b" />
-              <Text style={styles.menuItemText}>Notifications</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuItemContent}>
-              <Shield size={20} color="#64748b" />
-              <Text style={styles.menuItemText}>Privacy & Security</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuItemContent}>
-              <CreditCard size={20} color="#64748b" />
-              <Text style={styles.menuItemText}>Payment Settings</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem}>
-            <View style={styles.menuItemContent}>
-              <HelpCircle size={20} color="#64748b" />
-              <Text style={styles.menuItemText}>Help & Support</Text>
-            </View>
-          </TouchableOpacity>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity key={index} style={styles.menuItem}>
+              <View style={styles.menuItemContent}>
+                <item.icon size={20} color="#64748b" />
+                <Text style={styles.menuItemText}>{item.title}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
 
           <TouchableOpacity style={[styles.menuItem, styles.logoutButton]} onPress={handleSignOut}>
             <View style={styles.menuItemContent}>
@@ -186,6 +225,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#f1f5f9',
   },
+  approvedStatus: {
+    backgroundColor: '#dcfce7',
+  },
+  rejectedStatus: {
+    backgroundColor: '#fee2e2',
+  },
   validationText: {
     fontSize: 14,
     fontWeight: '500',
@@ -197,9 +242,54 @@ const styles = StyleSheet.create({
   rejectedText: {
     color: '#ef4444',
   },
+  statsSection: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    marginTop: 12,
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#e2e8f0',
+    marginHorizontal: 20,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  infoSection: {
+    backgroundColor: '#ffffff',
+    marginTop: 12,
+    padding: 20,
+  },
+  infoItem: {
+    marginBottom: 16,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#1e293b',
+  },
   menuSection: {
     backgroundColor: '#ffffff',
-    marginTop: 20,
+    marginTop: 12,
     paddingHorizontal: 20,
   },
   menuItem: {
