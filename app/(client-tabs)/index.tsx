@@ -213,16 +213,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
+    maxHeight: 52, // Added to control container height
   },
   specialtiesContent: {
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8, // Reduced padding
+    alignItems: 'center', // Added to vertically center chips
   },
   specialtyChip: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 6, // Reduced padding
     backgroundColor: '#f1f5f9',
     borderRadius: 16,
     marginRight: 8,
+    height: 32, // Fixed height for all chips
+    justifyContent: 'center', // Center text vertically
   },
   selectedSpecialty: {
     backgroundColor: '#7C3AED',
