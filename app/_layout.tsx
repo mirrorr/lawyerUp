@@ -58,7 +58,7 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
-        {!session ? (
+        {!session?.user ? (
           <Stack.Screen 
             name="auth/sign-in" 
             options={{ 
