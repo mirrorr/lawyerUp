@@ -40,15 +40,9 @@ export default function LawyerMessages() {
       const { data, error: chatsError } = await supabase
         .from('chats')
         .select(`
-          *,
-          user:users!chats_user_id_fkey(*),
-          latest_message:messages(
-            content,
-            created_at,
-            sender_id
-          )
+          *
         `)
-        .eq('user_id', user.id)
+        .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
 
       if (chatsError) throw chatsError;
