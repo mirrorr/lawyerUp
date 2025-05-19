@@ -93,6 +93,21 @@ export default function FindLawyers() {
     );
   };
 
+  // Close sort menu when clicking outside
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.sort-container')) {
+          setShowSortMenu(false);
+        }
+      };
+
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, []);
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -172,7 +187,7 @@ export default function FindLawyers() {
           ))}
         </ScrollView>
 
-        <View style={styles.sortContainer}>
+        <View style={[styles.sortContainer, Platform.OS === 'web' && { className: 'sort-container' }]}>
           <TouchableOpacity 
             style={styles.sortButton}
             onPress={() => setShowSortMenu(!showSortMenu)}
@@ -182,10 +197,7 @@ export default function FindLawyers() {
           </TouchableOpacity>
 
           {showSortMenu && (
-            <View style={[
-              styles.sortMenu,
-              Platform.OS === 'web' && styles.sortMenuWeb
-            ]}>
+            <View style={[styles.sortMenu, Platform.OS === 'web' && styles.sortMenuWeb]}>
               {sortOptions.map((option) => (
                 <TouchableOpacity
                   key={option.value}
@@ -442,7 +454,7 @@ const styles = StyleSheet.create({
   },
   lawyersContent: {
     padding: 20,
-    paddingBottom: 100, // Add extra padding at the bottom
+    paddingBottom: 100,
   },
   lawyerLink: {
     width: '100%',
