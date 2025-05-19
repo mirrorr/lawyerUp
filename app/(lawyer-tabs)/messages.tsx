@@ -21,7 +21,7 @@ export default function LawyerMessages() {
         .from('chats')
         .select(`
           *,
-          user:users(*)
+          lawyer:lawyers(*)
         `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
@@ -84,11 +84,11 @@ export default function LawyerMessages() {
             >
               <TouchableOpacity style={styles.chatCard}>
                 <Image 
-                  source={{ uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg' }} 
+                  source={{ uri: chat.lawyer?.image_url || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg' }} 
                   style={styles.userImage} 
                 />
                 <View style={styles.chatInfo}>
-                  <Text style={styles.userName}>{chat.user?.email || 'User'}</Text>
+                  <Text style={styles.userName}>{chat.lawyer?.name || 'Lawyer'}</Text>
                   <Text style={styles.lastMessage} numberOfLines={1}>
                     Tap to view conversation
                   </Text>
