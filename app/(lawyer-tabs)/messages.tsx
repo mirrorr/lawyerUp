@@ -34,18 +34,23 @@ export default function LawyerMessages() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      
-
       // Get all chats with user details and latest message
-      console.log("testt:", user.id);
       const { data, error: chatsError } = await supabase
         .from('chats')
-        .select(`*`)
+        .select(`
+          *,
+          user:users!chats_user_id_fkey(*),
+          latest_message:messages(
+            content,
+            created_at,
+            sender_id
+          )
+        `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
 
       if (chatsError) throw chatsError;
-console.log("chats:", data);
+
       // Process the data to include only the latest message
       const processedChats = data?.map(chat => ({
         ...chat,
