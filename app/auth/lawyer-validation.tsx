@@ -31,16 +31,18 @@ export default function LawyerValidation() {
           id: user.id,
           name: formData.name,
           specialty: formData.specialty,
+          license_number: formData.licenseNumber,
           experience: formData.experience,
           education: formData.education,
           languages: formData.languages.split(',').map(lang => lang.trim()),
-          image_url: 'https://images.pexels.com/photos/5668770/pexels-photo-5668770.jpeg', // Default image
+          image_url: 'https://images.pexels.com/photos/5668770/pexels-photo-5668770.jpeg',
           location: 'Not specified',
           about: 'Professional lawyer with extensive experience.',
           consultation_fee: 'Contact for details',
           availability: 'Available',
           rating: 0,
           reviews_count: 0,
+          validation_status: 'pending'
         });
 
       if (profileError) throw profileError;
