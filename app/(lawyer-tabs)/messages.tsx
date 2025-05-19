@@ -42,7 +42,7 @@ export default function LawyerMessages() {
           *,
           lawyer:lawyers(*)
         `)
-        .eq('user_id', user.id)
+        .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
       /*
       const { data: chatsData, error: chatsError } = await supabase
