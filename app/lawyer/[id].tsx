@@ -124,6 +124,24 @@ export default function LawyerProfile() {
         throw new Error('Rating must be between 1 and 5');
       }
 
+      // First, ensure the user record exists in the users table
+      const { data: existingUser, error: userCheckError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (userCheckError || !existingUser) {
+        // Create the user record if it doesn't exist
+        const { error: createUserError } = await supabase
+          .from('users')
+          .insert({ id: user.id })
+          .select()
+          .single();
+
+        if (createUserError) throw createUserError;
+      }
+
       const review = {
         lawyer_id: id,
         user_id: user.id,
