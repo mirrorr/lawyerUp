@@ -239,6 +239,7 @@ export default function FindLawyers() {
       <ScrollView 
         style={styles.lawyersList}
         contentContainerStyle={styles.lawyersContent}
+        showsVerticalScrollIndicator={true}
       >
         {filteredLawyers().length > 0 ? (
           filteredLawyers().map((lawyer) => (
@@ -441,6 +442,7 @@ const styles = StyleSheet.create({
   },
   lawyersContent: {
     padding: 20,
+    paddingBottom: 100, // Add extra padding at the bottom
   },
   lawyerLink: {
     width: '100%',
