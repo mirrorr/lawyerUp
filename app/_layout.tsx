@@ -25,7 +25,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         {loading ? (
           // Render an empty screen while loading
-          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(client-tabs)" />
         ) : !session ? (
           // Redirect to sign in if no session
           <Stack.Screen 
@@ -35,9 +35,12 @@ export default function RootLayout() {
             }} 
           />
         ) : (
-          // Render main app tabs if authenticated
+          // Render main app screens
           <>
-            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="auth/user-type" />
+            <Stack.Screen name="auth/lawyer-validation" />
+            <Stack.Screen name="(client-tabs)" />
+            <Stack.Screen name="(lawyer-tabs)" />
             <Stack.Screen name="+not-found" />
           </>
         )}
