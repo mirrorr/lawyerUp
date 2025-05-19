@@ -49,7 +49,7 @@ export default function LawyerMessages() {
         `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
-
+console.log("chats for:", user.id, " here: ", data);
       if (chatsError) throw chatsError;
 
       // Process chats to include only the latest message
