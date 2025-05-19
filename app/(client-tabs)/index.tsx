@@ -138,8 +138,8 @@ export default function FindLawyers() {
       >
         {filteredLawyers().length > 0 ? (
           filteredLawyers().map((lawyer) => (
-            <Link key={lawyer.id} href={`/lawyer/${lawyer.id}`} style={Platform.select({ web: { textDecoration: 'none' } })}>
-              <TouchableOpacity style={styles.lawyerCard}>
+            <Link key={lawyer.id} href={`/lawyer/${lawyer.id}`} style={[styles.lawyerLink, Platform.select({ web: { textDecoration: 'none' } })]}>
+              <View style={styles.lawyerCard}>
                 <Image source={{ uri: lawyer.image_url }} style={styles.lawyerImage} />
                 <View style={styles.lawyerInfo}>
                   <Text style={styles.lawyerName}>{lawyer.name}</Text>
@@ -154,7 +154,7 @@ export default function FindLawyers() {
                     <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
                   </View>
                 </View>
-              </TouchableOpacity>
+              </View>
             </Link>
           ))
         ) : (
@@ -241,6 +241,9 @@ const styles = StyleSheet.create({
   lawyersContent: {
     padding: 20,
   },
+  lawyerLink: {
+    width: '100%',
+  },
   lawyerCard: {
     flexDirection: 'row',
     backgroundColor: '#ffffff',
@@ -255,6 +258,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    width: '100%',
   },
   lawyerImage: {
     width: 80,
