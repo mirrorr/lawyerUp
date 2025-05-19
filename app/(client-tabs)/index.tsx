@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Search, MapPin, Star } from 'lucide-react-native';
+import { Search, MapPin, Star, ChevronDown } from 'lucide-react-native';
 import { Link } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
@@ -13,25 +13,52 @@ const specialties = [
   'Intellectual Property',
 ];
 
+type SortOption = {
+  label: string;
+  value: string;
+  order: 'asc' | 'desc';
+};
+
+const sortOptions: SortOption[] = [
+  { label: 'Highest Rated', value: 'rating', order: 'desc' },
+  { label: 'Most Reviews', value: 'reviews_count', order: 'desc' },
+  { label: 'Newest', value: 'created_at', order: 'desc' },
+];
+
 export default function FindLawyers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [lawyers, setLawyers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>(sortOptions[0]);
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
 
   useEffect(() => {
     fetchLawyers();
-  }, []);
+  }, [sortBy]);
 
   const fetchLawyers = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('lawyers')
-        .select('*');
+        .select('*')
+        .eq('validation_status', 'approved')
+        .order(sortBy.value, { ascending: sortBy.order === 'asc' });
 
-      if (error) throw error;
+      const { data, error: fetchError } = await query;
+
+      if (fetchError) throw fetchError;
+
+      // Extract unique languages from all lawyers
+      const languages = new Set<string>();
+      data?.forEach(lawyer => {
+        lawyer.languages.forEach((lang: string) => languages.add(lang));
+      });
+      setAvailableLanguages(Array.from(languages).sort());
 
       setLawyers(data || []);
     } catch (err) {
@@ -44,15 +71,27 @@ export default function FindLawyers() {
 
   const filteredLawyers = useCallback(() => {
     return lawyers.filter(lawyer => {
-      const matchesSearch = lawyer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const matchesSearch = 
+        lawyer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lawyer.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lawyer.specialty.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesSpecialty = !selectedSpecialty || lawyer.specialty === selectedSpecialty;
 
-      return matchesSearch && matchesSpecialty;
+      const matchesLanguages = selectedLanguages.length === 0 || 
+        selectedLanguages.every(lang => lawyer.languages.includes(lang));
+
+      return matchesSearch && matchesSpecialty && matchesLanguages;
     });
-  }, [searchQuery, selectedSpecialty, lawyers]);
+  }, [searchQuery, selectedSpecialty, selectedLanguages, lawyers]);
+
+  const toggleLanguage = (language: string) => {
+    setSelectedLanguages(prev => 
+      prev.includes(language)
+        ? prev.filter(l => l !== language)
+        : [...prev, language]
+    );
+  };
 
   if (loading) {
     return (
@@ -93,44 +132,106 @@ export default function FindLawyers() {
         </View>
       </View>
 
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        style={styles.specialtiesContainer}
-        contentContainerStyle={styles.specialtiesContent}
-      >
-        <TouchableOpacity
-          style={[
-            styles.specialtyChip,
-            !selectedSpecialty && styles.selectedSpecialty,
-          ]}
-          onPress={() => setSelectedSpecialty('')}>
-          <Text
-            style={[
-              styles.specialtyText,
-              !selectedSpecialty && styles.selectedSpecialtyText,
-            ]}>
-            All
-          </Text>
-        </TouchableOpacity>
-        {specialties.map((specialty) => (
+      <View style={styles.filtersContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.specialtiesContainer}
+          contentContainerStyle={styles.specialtiesContent}
+        >
           <TouchableOpacity
-            key={specialty}
             style={[
               styles.specialtyChip,
-              selectedSpecialty === specialty && styles.selectedSpecialty,
+              !selectedSpecialty && styles.selectedSpecialty,
             ]}
-            onPress={() => setSelectedSpecialty(specialty)}>
+            onPress={() => setSelectedSpecialty('')}>
             <Text
               style={[
                 styles.specialtyText,
-                selectedSpecialty === specialty && styles.selectedSpecialtyText,
+                !selectedSpecialty && styles.selectedSpecialtyText,
               ]}>
-              {specialty}
+              All
             </Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          {specialties.map((specialty) => (
+            <TouchableOpacity
+              key={specialty}
+              style={[
+                styles.specialtyChip,
+                selectedSpecialty === specialty && styles.selectedSpecialty,
+              ]}
+              onPress={() => setSelectedSpecialty(specialty)}>
+              <Text
+                style={[
+                  styles.specialtyText,
+                  selectedSpecialty === specialty && styles.selectedSpecialtyText,
+                ]}>
+                {specialty}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <View style={styles.sortContainer}>
+          <TouchableOpacity 
+            style={styles.sortButton}
+            onPress={() => setShowSortMenu(!showSortMenu)}
+          >
+            <Text style={styles.sortButtonText}>{sortBy.label}</Text>
+            <ChevronDown size={16} color="#64748b" />
+          </TouchableOpacity>
+
+          {showSortMenu && (
+            <View style={styles.sortMenu}>
+              {sortOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.sortOption,
+                    sortBy.value === option.value && styles.selectedSortOption,
+                  ]}
+                  onPress={() => {
+                    setSortBy(option);
+                    setShowSortMenu(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.sortOptionText,
+                    sortBy.value === option.value && styles.selectedSortOptionText,
+                  ]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.languagesContainer}
+          contentContainerStyle={styles.languagesContent}
+        >
+          {availableLanguages.map((language) => (
+            <TouchableOpacity
+              key={language}
+              style={[
+                styles.languageChip,
+                selectedLanguages.includes(language) && styles.selectedLanguage,
+              ]}
+              onPress={() => toggleLanguage(language)}>
+              <Text
+                style={[
+                  styles.languageText,
+                  selectedLanguages.includes(language) && styles.selectedLanguageText,
+                ]}>
+                {language}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       <ScrollView 
         style={styles.lawyersList}
@@ -150,8 +251,15 @@ export default function FindLawyers() {
                   </View>
                   <View style={styles.ratingContainer}>
                     <Star size={14} color="#fbbf24" fill="#fbbf24" />
-                    <Text style={styles.rating}>{lawyer.rating}</Text>
+                    <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
                     <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
+                  </View>
+                  <View style={styles.languagesContainer}>
+                    {lawyer.languages.map((language: string) => (
+                      <View key={language} style={styles.languageBadge}>
+                        <Text style={styles.languageBadgeText}>{language}</Text>
+                      </View>
+                    ))}
                   </View>
                 </View>
               </View>
@@ -165,6 +273,7 @@ export default function FindLawyers() {
               onPress={() => {
                 setSearchQuery('');
                 setSelectedSpecialty('');
+                setSelectedLanguages([]);
               }}>
               <Text style={styles.resetButtonText}>Reset Search</Text>
             </TouchableOpacity>
@@ -209,25 +318,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1e293b',
   },
-  specialtiesContainer: {
+  filtersContainer: {
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
-    maxHeight: 52, // Added to control container height
+  },
+  specialtiesContainer: {
+    maxHeight: 52,
   },
   specialtiesContent: {
     paddingHorizontal: 16,
-    paddingVertical: 8, // Reduced padding
-    alignItems: 'center', // Added to vertically center chips
+    paddingVertical: 8,
+    alignItems: 'center',
   },
   specialtyChip: {
     paddingHorizontal: 12,
-    paddingVertical: 6, // Reduced padding
+    paddingVertical: 6,
     backgroundColor: '#f1f5f9',
     borderRadius: 16,
     marginRight: 8,
-    height: 32, // Fixed height for all chips
-    justifyContent: 'center', // Center text vertically
+    height: 32,
+    justifyContent: 'center',
   },
   selectedSpecialty: {
     backgroundColor: '#7C3AED',
@@ -238,6 +349,83 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   selectedSpecialtyText: {
+    color: '#ffffff',
+  },
+  sortContainer: {
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    position: 'relative',
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+  },
+  sortButtonText: {
+    fontSize: 14,
+    color: '#64748b',
+    marginRight: 4,
+  },
+  sortMenu: {
+    position: 'absolute',
+    top: '100%',
+    left: 12,
+    right: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    zIndex: 1000,
+  },
+  sortOption: {
+    padding: 12,
+    borderRadius: 8,
+  },
+  selectedSortOption: {
+    backgroundColor: '#f1f5f9',
+  },
+  sortOptionText: {
+    fontSize: 14,
+    color: '#64748b',
+  },
+  selectedSortOptionText: {
+    color: '#1e293b',
+    fontWeight: '600',
+  },
+  languagesContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  languagesContent: {
+    padding: 12,
+  },
+  languageChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  selectedLanguage: {
+    backgroundColor: '#7C3AED',
+  },
+  languageText: {
+    color: '#64748b',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  selectedLanguageText: {
     color: '#ffffff',
   },
   lawyersList: {
@@ -298,6 +486,7 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
   },
   rating: {
     fontSize: 14,
@@ -309,6 +498,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     marginLeft: 4,
+  },
+  languageBadge: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 8,
+    marginBottom: 4,
+  },
+  languageBadgeText: {
+    fontSize: 12,
+    color: '#64748b',
   },
   noResults: {
     alignItems: 'center',
