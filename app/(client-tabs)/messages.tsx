@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
 import { Link } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
@@ -7,6 +7,9 @@ export default function Messages() {
   const [chats, setChats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { width } = useWindowDimensions();
+  const isWeb = Platform.OS === 'web';
+  const numColumns = isWeb ? Math.max(2, Math.floor(width / 400)) : 1;
 
   useEffect(() => {
     fetchChats();
@@ -64,6 +67,54 @@ export default function Messages() {
     );
   }
 
+  const renderGrid = () => {
+    const rows = [];
+    for (let i = 0; i < chats.length; i += numColumns) {
+      const row = chats.slice(i, i + numColumns);
+      rows.push(
+        <View key={i} style={styles.row}>
+          {row.map((chat) => renderChatCard(chat))}
+          {/* Add empty cells to complete the row */}
+          {row.length < numColumns && Array(numColumns - row.length).fill(null).map((_, index) => (
+            <View key={`empty-${index}`} style={[styles.messageCard, styles.emptyCard]} />
+          ))}
+        </View>
+      );
+    }
+    return rows;
+  };
+
+  const renderChatCard = (chat: any) => (
+    <Link 
+      key={chat.id} 
+      href={`/chat/${chat.id}`}
+      style={[
+        styles.messageCardWrapper,
+        Platform.select({ web: { textDecoration: 'none' } })
+      ]}
+    >
+      <View style={styles.messageCard}>
+        <Image 
+          source={{ uri: chat.lawyer?.image_url || 'https://images.pexels.com/photos/5668770/pexels-photo-5668770.jpeg' }} 
+          style={styles.lawyerImage} 
+        />
+        <View style={styles.messageContent}>
+          <View style={styles.messageHeader}>
+            <Text style={styles.lawyerName}>{chat.lawyer?.name || 'Lawyer'}</Text>
+            <Text style={styles.timestamp}>
+              {new Date(chat.created_at).toLocaleDateString()}
+            </Text>
+          </View>
+          <View style={styles.messagePreview}>
+            <Text style={styles.lastMessage} numberOfLines={1}>
+              Tap to view conversation
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Link>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -78,34 +129,10 @@ export default function Messages() {
               Start a conversation by finding a lawyer and clicking "Start Chat"
             </Text>
           </View>
+        ) : isWeb ? (
+          <View style={styles.grid}>{renderGrid()}</View>
         ) : (
-          chats.map((chat) => (
-            <Link 
-              key={chat.id} 
-              href={`/chat/${chat.id}`}
-              style={Platform.select({ web: { textDecoration: 'none' } })}
-            >
-              <TouchableOpacity style={styles.messageCard}>
-                <Image 
-                  source={{ uri: chat.lawyer?.image_url || 'https://images.pexels.com/photos/5668770/pexels-photo-5668770.jpeg' }} 
-                  style={styles.lawyerImage} 
-                />
-                <View style={styles.messageContent}>
-                  <View style={styles.messageHeader}>
-                    <Text style={styles.lawyerName}>{chat.lawyer?.name || 'Lawyer'}</Text>
-                    <Text style={styles.timestamp}>
-                      {new Date(chat.created_at).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <View style={styles.messagePreview}>
-                    <Text style={styles.lastMessage} numberOfLines={1}>
-                      Tap to view conversation
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </Link>
-          ))
+          chats.map((chat) => renderChatCard(chat))
         )}
       </ScrollView>
     </View>
@@ -128,15 +155,24 @@ const styles = StyleSheet.create({
     color: '#1e293b',
   },
   messagesList: {
+    flex: 1,
+  },
+  grid: {
     padding: 20,
   },
-  messageCard: {
+  row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    marginHorizontal: -10,
+    marginBottom: 20,
+  },
+  messageCardWrapper: {
+    flex: 1,
+    marginHorizontal: 10,
+  },
+  messageCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -145,12 +181,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    flex: 1,
+  },
+  emptyCard: {
+    backgroundColor: 'transparent',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   lawyerImage: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    marginRight: 16,
+    marginBottom: 12,
   },
   messageContent: {
     flex: 1,
