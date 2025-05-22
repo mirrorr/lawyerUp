@@ -1,3 +1,5 @@
+import { StyleSheet } from 'react-native-web';
+
 // Update colors in styles
 const styles = StyleSheet.create({
   // ... other styles
