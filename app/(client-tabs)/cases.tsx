@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platfo
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Plus, ChevronRight, Clock, User } from 'lucide-react-native';
+import Header from '@/components/Header';
 
 export default function Cases() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -89,9 +90,9 @@ export default function Cases() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <Header>
           <Text style={styles.title}>Cases</Text>
-        </View>
+        </Header>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
@@ -102,9 +103,9 @@ export default function Cases() {
   if (!isAuthenticated) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <Header>
           <Text style={styles.title}>Cases</Text>
-        </View>
+        </Header>
         <View style={styles.notAuthenticatedContainer}>
           <Text style={styles.notAuthenticatedText}>
             Sign in to manage your legal cases and connect with lawyers
@@ -122,7 +123,7 @@ export default function Cases() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <Header>
         <Text style={styles.title}>Cases</Text>
         {!showNewCaseForm && (
           <TouchableOpacity
@@ -133,7 +134,7 @@ export default function Cases() {
             <Text style={styles.newCaseButtonText}>New Case</Text>
           </TouchableOpacity>
         )}
-      </View>
+      </Header>
 
       <ScrollView style={styles.content}>
         {showNewCaseForm && (
@@ -252,16 +253,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-  },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   title: {
     fontSize: 28,
