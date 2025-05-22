@@ -1,26 +1,63 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Calendar, Clock, Video } from 'lucide-react-native';
-
-const appointments = [
-  {
-    id: '1',
-    lawyer: 'Sarah Johnson',
-    type: 'Video Consultation',
-    date: 'Today',
-    time: '2:30 PM',
-    status: 'upcoming',
-  },
-  {
-    id: '2',
-    lawyer: 'Michael Chen',
-    type: 'Initial Consultation',
-    date: 'Tomorrow',
-    time: '10:00 AM',
-    status: 'upcoming',
-  },
-];
+import { router } from 'expo-router';
+import { supabase } from '@/lib/supabase';
+import { useState, useEffect } from 'react';
 
 export default function Appointments() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+    } catch (err) {
+      console.error('Error checking auth status:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Appointments</Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Appointments</Text>
+        </View>
+        <View style={styles.notAuthenticatedContainer}>
+          <Text style={styles.notAuthenticatedText}>
+            Sign in to schedule and manage your appointments with lawyers
+          </Text>
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={() => router.push('/auth/sign-in')}
+          >
+            <Text style={styles.loginButtonText}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -28,43 +65,12 @@ export default function Appointments() {
       </View>
 
       <ScrollView style={styles.appointmentsList}>
-        {appointments.map((appointment) => (
-          <TouchableOpacity key={appointment.id} style={styles.appointmentCard}>
-            <View style={styles.appointmentHeader}>
-              <Text style={styles.lawyerName}>{appointment.lawyer}</Text>
-              <View style={[
-                styles.statusBadge,
-                appointment.status === 'upcoming' && styles.upcomingBadge,
-              ]}>
-                <Text style={[
-                  styles.statusText,
-                  appointment.status === 'upcoming' && styles.upcomingText,
-                ]}>
-                  {appointment.status}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.appointmentDetails}>
-              <View style={styles.detailRow}>
-                <Video size={16} color="#64748b" />
-                <Text style={styles.detailText}>{appointment.type}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Calendar size={16} color="#64748b" />
-                <Text style={styles.detailText}>{appointment.date}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Clock size={16} color="#64748b" />
-                <Text style={styles.detailText}>{appointment.time}</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity style={styles.joinButton}>
-              <Text style={styles.joinButtonText}>Join Meeting</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No appointments scheduled</Text>
+          <Text style={styles.emptySubtext}>
+            Find a lawyer and schedule a consultation to get started
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -88,71 +94,54 @@ const styles = StyleSheet.create({
   appointmentsList: {
     padding: 20,
   },
-  appointmentCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  appointmentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  notAuthenticatedContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    padding: 20,
   },
-  lawyerName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1e293b',
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    backgroundColor: '#f1f5f9',
-  },
-  upcomingBadge: {
-    backgroundColor: '#dbeafe',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
+  notAuthenticatedText: {
+    fontSize: 16,
     color: '#64748b',
-    textTransform: 'capitalize',
-  },
-  upcomingText: {
-    color: '#2563eb',
-  },
-  appointmentDetails: {
+    textAlign: 'center',
     marginBottom: 20,
   },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  detailText: {
-    fontSize: 14,
-    color: '#64748b',
-    marginLeft: 8,
-  },
-  joinButton: {
-    backgroundColor: '#2563eb',
+  loginButton: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
     borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
   },
-  joinButtonText: {
+  loginButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#64748b',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 40,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
   },
 });

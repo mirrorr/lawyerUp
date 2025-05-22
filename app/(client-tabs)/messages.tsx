@@ -1,19 +1,36 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 export default function Messages() {
   const [chats, setChats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === 'web';
   const numColumns = isWeb ? Math.max(2, Math.floor(width / 400)) : 1;
 
   useEffect(() => {
-    fetchChats();
+    checkAuthStatus();
   }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+      
+      if (user) {
+        await fetchChats();
+      }
+    } catch (err) {
+      console.error('Error checking auth status:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchChats = async () => {
     try {
@@ -33,8 +50,6 @@ export default function Messages() {
       setChats(data || []);
     } catch (err: any) {
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -45,7 +60,28 @@ export default function Messages() {
           <Text style={styles.title}>Messages</Text>
         </View>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading chats...</Text>
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Messages</Text>
+        </View>
+        <View style={styles.notAuthenticatedContainer}>
+          <Text style={styles.notAuthenticatedText}>
+            Sign in to access your messages and chat with lawyers
+          </Text>
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={() => router.push('/auth/sign-in')}
+          >
+            <Text style={styles.loginButtonText}>Sign In</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -66,54 +102,6 @@ export default function Messages() {
       </View>
     );
   }
-
-  const renderGrid = () => {
-    const rows = [];
-    for (let i = 0; i < chats.length; i += numColumns) {
-      const row = chats.slice(i, i + numColumns);
-      rows.push(
-        <View key={i} style={styles.row}>
-          {row.map((chat) => renderChatCard(chat))}
-          {/* Add empty cells to complete the row */}
-          {row.length < numColumns && Array(numColumns - row.length).fill(null).map((_, index) => (
-            <View key={`empty-${index}`} style={[styles.messageCard, styles.emptyCard]} />
-          ))}
-        </View>
-      );
-    }
-    return rows;
-  };
-
-  const renderChatCard = (chat: any) => (
-    <Link 
-      key={chat.id} 
-      href={`/chat/${chat.id}`}
-      style={[
-        styles.messageCardWrapper,
-        Platform.select({ web: { textDecoration: 'none' } })
-      ]}
-    >
-      <View style={styles.messageCard}>
-        <Image 
-          source={{ uri: chat.lawyer?.image_url || 'https://images.pexels.com/photos/5668770/pexels-photo-5668770.jpeg' }} 
-          style={styles.lawyerImage} 
-        />
-        <View style={styles.messageContent}>
-          <View style={styles.messageHeader}>
-            <Text style={styles.lawyerName}>{chat.lawyer?.name || 'Lawyer'}</Text>
-            <Text style={styles.timestamp}>
-              {new Date(chat.created_at).toLocaleDateString()}
-            </Text>
-          </View>
-          <View style={styles.messagePreview}>
-            <Text style={styles.lastMessage} numberOfLines={1}>
-              Tap to view conversation
-            </Text>
-          </View>
-        </View>
-      </View>
-    </Link>
-  );
 
   return (
     <View style={styles.container}>
@@ -153,6 +141,29 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: '#1e293b',
+  },
+  notAuthenticatedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  notAuthenticatedText: {
+    fontSize: 16,
+    color: '#64748b',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  loginButton: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+  loginButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   messagesList: {
     flex: 1,
