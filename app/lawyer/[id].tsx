@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Platform, TextInput } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useLocalSearchParams, Link, useRouter } from 'expo-router';
 import { MapPin, Star, MessageSquare, Calendar, Clock, Briefcase, Award, Globe, ArrowLeft } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
@@ -41,12 +41,21 @@ export default function LawyerProfile() {
   const [newComment, setNewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [canReview, setCanReview] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    checkAuthStatus();
     fetchLawyer();
-    fetchReviews();
-    checkReviewEligibility();
-  }, [id]);
+    if (isAuthenticated) {
+      fetchReviews();
+      checkReviewEligibility();
+    }
+  }, [id, isAuthenticated]);
+
+  const checkAuthStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsAuthenticated(!!user);
+  };
 
   const fetchLawyer = async () => {
     try {
@@ -153,21 +162,21 @@ export default function LawyerProfile() {
   };
 
   const handleStartChat = async () => {
+    if (!isAuthenticated) {
+      router.push('/auth/sign-in');
+      return;
+    }
+
     try {
       setCreatingChat(true);
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        router.push('/auth/sign-in');
-        return;
-      }
 
       // Check if chat already exists
       const { data: existingChat } = await supabase
         .from('chats')
         .select('id')
         .eq('lawyer_id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .single();
 
       if (existingChat) {
@@ -180,7 +189,7 @@ export default function LawyerProfile() {
         .from('chats')
         .insert({
           lawyer_id: id,
-          user_id: user.id,
+          user_id: user!.id,
         })
         .select()
         .single();
@@ -319,60 +328,76 @@ export default function LawyerProfile() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Reviews</Text>
           
-          {canReview && (
-            <View style={styles.reviewForm}>
-              <Text style={styles.reviewFormTitle}>
-                {userReview ? 'Update Your Review' : 'Write a Review'}
+          {!isAuthenticated ? (
+            <View style={styles.loginPromptContainer}>
+              <Text style={styles.loginPromptText}>
+                Sign in to see reviews and access chat features
               </Text>
-              <View style={styles.ratingInput}>
-                {renderStars(newRating, true)}
-              </View>
-              <TextInput
-                style={styles.commentInput}
-                value={newComment}
-                onChangeText={setNewComment}
-                placeholder="Write your review here..."
-                multiline
-                numberOfLines={4}
-              />
               <TouchableOpacity
-                style={[styles.submitButton, submittingReview && styles.buttonDisabled]}
-                onPress={handleSubmitReview}
-                disabled={submittingReview || newRating === 0}
+                style={styles.loginButton}
+                onPress={() => router.push('/auth/sign-in')}
               >
-                <Text style={styles.submitButtonText}>
-                  {submittingReview ? 'Submitting...' : userReview ? 'Update Review' : 'Submit Review'}
-                </Text>
+                <Text style={styles.loginButtonText}>Sign In</Text>
               </TouchableOpacity>
             </View>
-          )}
-
-          {reviews.length > 0 ? (
-            reviews.map((review) => (
-              <View key={review.id} style={styles.reviewCard}>
-                <View style={styles.reviewHeader}>
-                  <View style={styles.reviewerAvatar}>
-                    <Text style={styles.reviewerInitial}>
-                      {review.user_id[0].toUpperCase()}
-                    </Text>
-                  </View>
-                  <View style={styles.reviewInfo}>
-                    <Text style={styles.reviewerName}>
-                      Client #{review.user_id.slice(0, 8)}
-                    </Text>
-                    <Text style={styles.reviewDate}>
-                      {new Date(review.created_at).toLocaleDateString()}
-                    </Text>
-                  </View>
-                </View>
-                {renderStars(review.rating)}
-                {review.comment && (
-                  <Text style={styles.reviewComment}>{review.comment}</Text>
-                )}
-              </View>
-            ))
           ) : (
-            <Text style={styles.noReviews}>No reviews yet</Text>
+            <>
+              {canReview && (
+                <View style={styles.reviewForm}>
+                  <Text style={styles.reviewFormTitle}>
+                    {userReview ? 'Update Your Review' : 'Write a Review'}
+                  </Text>
+                  <View style={styles.ratingInput}>
+                    {renderStars(newRating, true)}
+                  </View>
+                  <TextInput
+                    style={styles.commentInput}
+                    value={newComment}
+                    onChangeText={setNewComment}
+                    placeholder="Write your review here..."
+                    multiline
+                    numberOfLines={4}
+                  />
+                  <TouchableOpacity
+                    style={[styles.submitButton, submittingReview && styles.buttonDisabled]}
+                    onPress={handleSubmitReview}
+                    disabled={submittingReview || newRating === 0}
+                  >
+                    <Text style={styles.submitButtonText}>
+                      {submittingReview ? 'Submitting...' : userReview ? 'Update Review' : 'Submit Review'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <View key={review.id} style={styles.reviewCard}>
+                    <View style={styles.reviewHeader}>
+                      <View style={styles.reviewerAvatar}>
+                        <Text style={styles.reviewerInitial}>
+                          {review.user_id[0].toUpperCase()}
+                        </Text>
+                      </View>
+                      <View style={styles.reviewInfo}>
+                        <Text style={styles.reviewerName}>
+                          Client #{review.user_id.slice(0, 8)}
+                        </Text>
+                        <Text style={styles.reviewDate}>
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </View>
+                    {renderStars(review.rating)}
+                    {review.comment && (
+                      <Text style={styles.reviewComment}>{review.comment}</Text>
+                    )}
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.noReviews}>No reviews yet</Text>
+              )}
+            </>
           )}
         </View>
 
@@ -384,7 +409,7 @@ export default function LawyerProfile() {
           >
             <MessageSquare size={20} color="#ffffff" />
             <Text style={styles.buttonText}>
-              {creatingChat ? 'Starting Chat...' : 'Start Chat'}
+              {!isAuthenticated ? 'Sign In to Chat' : creatingChat ? 'Starting Chat...' : 'Start Chat'}
             </Text>
           </TouchableOpacity>
           <Link href={`/book/${lawyer.id}`} style={Platform.select({ web: { textDecoration: 'none' } })}>
@@ -522,6 +547,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#334155',
     lineHeight: 24,
+  },
+  loginPromptContainer: {
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+  },
+  loginPromptText: {
+    fontSize: 16,
+    color: '#64748b',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  loginButton: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  loginButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   reviewForm: {
     backgroundColor: '#f8fafc',
