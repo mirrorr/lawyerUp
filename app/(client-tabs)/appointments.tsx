@@ -3,6 +3,7 @@ import { Calendar, Clock, Video } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useState, useEffect } from 'react';
+import Header from '@/components/Header';
 
 export default function Appointments() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -27,9 +28,9 @@ export default function Appointments() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <Header>
           <Text style={styles.title}>Appointments</Text>
-        </View>
+        </Header>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
@@ -40,9 +41,9 @@ export default function Appointments() {
   if (!isAuthenticated) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <Header>
           <Text style={styles.title}>Appointments</Text>
-        </View>
+        </Header>
         <View style={styles.notAuthenticatedContainer}>
           <Text style={styles.notAuthenticatedText}>
             Sign in to schedule and manage your appointments with lawyers
@@ -60,9 +61,9 @@ export default function Appointments() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <Header>
         <Text style={styles.title}>Appointments</Text>
-      </View>
+      </Header>
 
       <ScrollView style={styles.appointmentsList}>
         <View style={styles.emptyContainer}>
@@ -80,11 +81,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-  },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#ffffff',
   },
   title: {
     fontSize: 28,

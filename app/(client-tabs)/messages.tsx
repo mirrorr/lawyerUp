@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
 import { Link, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import Header from '@/components/Header';
 
 export default function Messages() {
   const [chats, setChats] = useState<any[]>([]);
@@ -96,9 +97,9 @@ export default function Messages() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <Header>
           <Text style={styles.title}>Messages</Text>
-        </View>
+        </Header>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
@@ -109,9 +110,9 @@ export default function Messages() {
   if (!isAuthenticated) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <Header>
           <Text style={styles.title}>Messages</Text>
-        </View>
+        </Header>
         <View style={styles.notAuthenticatedContainer}>
           <Text style={styles.notAuthenticatedText}>
             Sign in to access your messages and chat with lawyers
@@ -130,9 +131,9 @@ export default function Messages() {
   if (error) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <Header>
           <Text style={styles.title}>Messages</Text>
-        </View>
+        </Header>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={fetchChats}>
@@ -145,9 +146,9 @@ export default function Messages() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <Header>
         <Text style={styles.title}>Messages</Text>
-      </View>
+      </Header>
 
       <ScrollView style={styles.messagesList}>
         {chats.length === 0 ? (
@@ -172,38 +173,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc',
   },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#ffffff',
-  },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: '#1e293b',
-  },
-  notAuthenticatedContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  notAuthenticatedText: {
-    fontSize: 16,
-    color: '#64748b',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  loginButton: {
-    backgroundColor: '#7C3AED',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-  },
-  loginButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   messagesList: {
     flex: 1,
@@ -324,5 +297,28 @@ const styles = StyleSheet.create({
     color: '#64748b',
     textAlign: 'center',
     paddingHorizontal: 32,
+  },
+  notAuthenticatedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  notAuthenticatedText: {
+    fontSize: 16,
+    color: '#64748b',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  loginButton: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+  loginButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

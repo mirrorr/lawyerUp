@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'rea
 import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut, Briefcase } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
+import Header from '@/components/Header';
 
 const menuItems = [
   {
@@ -94,9 +95,9 @@ export default function Profile() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <Header>
           <Text style={styles.title}>Profile</Text>
-        </View>
+        </Header>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading profile...</Text>
         </View>
@@ -107,9 +108,9 @@ export default function Profile() {
   if (!user) {
     return (
       <View style={styles.container}>
-        <View style={styles.header}>
+        <Header>
           <Text style={styles.title}>Profile</Text>
-        </View>
+        </Header>
         <View style={styles.notAuthenticatedContainer}>
           <Text style={styles.notAuthenticatedText}>
             Sign in to access your profile and manage your account
@@ -127,9 +128,9 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <Header>
         <Text style={styles.title}>Profile</Text>
-      </View>
+      </Header>
 
       <ScrollView style={styles.content}>
         <View style={styles.profileSection}>
@@ -198,11 +199,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-  },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#ffffff',
   },
   title: {
     fontSize: 28,
