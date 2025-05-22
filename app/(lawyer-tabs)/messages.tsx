@@ -11,8 +11,7 @@ export default function LawyerMessages() {
 
   useEffect(() => {
     fetchChats();
-
-    // Subscribe to new messages
+    
     const subscription = supabase
       .channel('messages')
       .on('postgres_changes', {
@@ -20,7 +19,6 @@ export default function LawyerMessages() {
         schema: 'public',
         table: 'messages',
       }, () => {
-        // Refresh chats when new message is received
         fetchChats();
       })
       .subscribe();
@@ -36,7 +34,6 @@ export default function LawyerMessages() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // First get all chats for the lawyer
       const { data: chatsData, error: chatsError } = await supabase
         .from('chats')
         .select(`
@@ -47,9 +44,7 @@ export default function LawyerMessages() {
         .order('created_at', { ascending: false });
 
       if (chatsError) throw chatsError;
-      console.log("chats:", chatsData);
 
-      // Process chats to include only the latest message
       const processedChats = (chatsData || []).map(chat => ({
         ...chat,
         latest_message: chat.messages?.[0] || null
@@ -58,7 +53,6 @@ export default function LawyerMessages() {
       setChats(processedChats);
     } catch (err: any) {
       setError(err.message);
-      console.error('Error fetching chats:', err);
     } finally {
       setLoading(false);
     }
