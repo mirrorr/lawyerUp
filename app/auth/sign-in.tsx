@@ -8,13 +8,11 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showResendButton, setShowResendButton] = useState(false);
 
   const handleSignIn = async () => {
     try {
       setLoading(true);
       setError(null);
-      setShowResendButton(false);
 
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -24,31 +22,6 @@ export default function SignIn() {
       if (error) throw error;
 
       router.replace('/auth/user-type');
-    } catch (err: any) {
-      if (err.message.includes('Email not confirmed')) {
-        setError('Please confirm your email address before signing in. Check your inbox and spam folder for the confirmation email.');
-        setShowResendButton(true);
-      } else {
-        setError(err.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendConfirmation = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email,
-      });
-
-      if (error) throw error;
-
-      setError('Confirmation email resent. Please check your inbox and spam folder.');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -66,16 +39,6 @@ export default function SignIn() {
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
-          {showResendButton && (
-            <TouchableOpacity
-              style={styles.resendButton}
-              onPress={handleResendConfirmation}
-              disabled={loading}>
-              <Text style={styles.resendButtonText}>
-                Resend Confirmation Email
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
       )}
 
@@ -120,6 +83,13 @@ export default function SignIn() {
             <Text style={styles.linkText}>Sign Up</Text>
           </Link>
         </View>
+
+        <TouchableOpacity 
+          style={styles.guestButton} 
+          onPress={() => router.replace('/(client-tabs)')}
+        >
+          <Text style={styles.guestButtonText}>Continue as Guest</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -207,17 +177,19 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#ef4444',
     fontSize: 14,
-    marginBottom: 12,
   },
-  resendButton: {
-    backgroundColor: '#fee2e2',
-    borderRadius: 8,
-    padding: 12,
+  guestButton: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
-  resendButtonText: {
-    color: '#ef4444',
-    fontSize: 14,
+  guestButtonText: {
+    color: '#64748b',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

@@ -49,10 +49,7 @@ export default function MainLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         {!session?.user ? (
           // Authentication flow
-          <>
-            <Stack.Screen name="auth/sign-in" />
-            <Stack.Screen name="auth/sign-up" />
-          </>
+          <Stack.Screen name="auth" />
         ) : isLawyer === true ? (
           // Lawyer flow
           <Stack.Screen name="(lawyer-tabs)" />
