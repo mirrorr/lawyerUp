@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from '
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { ArrowLeft, Clock, User } from 'lucide-react-native';
+import { theme } from '@/constants/theme';
 
 export default function CaseDetails() {
   const { id } = useLocalSearchParams();
@@ -84,7 +85,7 @@ export default function CaseDetails() {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={24} color="#1e293b" />
+            <ArrowLeft size={24} color={theme.colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Case Details</Text>
         </View>
@@ -100,7 +101,7 @@ export default function CaseDetails() {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={24} color="#1e293b" />
+            <ArrowLeft size={24} color={theme.colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Case Details</Text>
         </View>
@@ -118,7 +119,7 @@ export default function CaseDetails() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#1e293b" />
+          <ArrowLeft size={24} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Case Details</Text>
       </View>
@@ -150,13 +151,13 @@ export default function CaseDetails() {
 
         <View style={styles.section}>
           <View style={styles.infoRow}>
-            <Clock size={16} color="#64748b" />
+            <Clock size={16} color={theme.colors.text.secondary} />
             <Text style={styles.infoText}>
               Created on {new Date(caseData.created_at).toLocaleDateString()}
             </Text>
           </View>
           <View style={styles.infoRow}>
-            <User size={16} color="#64748b" />
+            <User size={16} color={theme.colors.text.secondary} />
             <Text style={styles.infoText}>
               {caseData.lawyer ? caseData.lawyer.name : 'No lawyer assigned'}
             </Text>
@@ -200,7 +201,7 @@ export default function CaseDetails() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -208,9 +209,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: theme.colors.border,
   },
   backButton: {
     padding: 8,
@@ -219,14 +220,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   content: {
     flex: 1,
     padding: 20,
   },
   caseHeader: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
   caseTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 12,
   },
   statusBadge: {
@@ -258,13 +259,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   openBadge: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: theme.colors.info + '20',
   },
   inProgressBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: theme.colors.warning + '20',
   },
   closedBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: theme.colors.success + '20',
   },
   statusText: {
     fontSize: 14,
@@ -272,16 +273,16 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   openText: {
-    color: '#2563eb',
+    color: theme.colors.info,
   },
   inProgressText: {
-    color: '#d97706',
+    color: theme.colors.warning,
   },
   closedText: {
-    color: '#059669',
+    color: theme.colors.success,
   },
   section: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -303,12 +304,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 12,
   },
   description: {
     fontSize: 16,
-    color: '#334155',
+    color: theme.colors.text.primary,
     lineHeight: 24,
   },
   infoRow: {
@@ -319,7 +320,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   lawyersList: {
     maxHeight: 300,
@@ -331,7 +332,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: theme.colors.border,
   },
   lawyerInfo: {
     flex: 1,
@@ -339,21 +340,21 @@ const styles = StyleSheet.create({
   lawyerName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   lawyerSpecialty: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   assignButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   assignButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
@@ -376,19 +377,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
