@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Platform } from 'react-native';
-import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut, User, Calendar, Edit2, Plus, X } from 'lucide-react-native';
+import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut, User, Calendar, CreditCard as Edit2, Plus, X } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 
