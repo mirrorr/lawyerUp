@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/constants/theme';
 
 export default function LawyerMessages() {
   const [chats, setChats] = useState<any[]>([]);
@@ -44,15 +45,10 @@ export default function LawyerMessages() {
         `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
-      /*
-      const { data: chatsData, error: chatsError } = await supabase
-        .from('chats')
-        .select('*, messages(*)')
-        .eq('lawyer_id', user.id)
-        .order('created_at', { ascending: false });
-*/
+
       if (chatsError) throw chatsError;
-console.log("chats:", chatsData);
+      console.log("chats:", chatsData);
+
       // Process chats to include only the latest message
       const processedChats = (chatsData || []).map(chat => ({
         ...chat,
@@ -144,19 +140,19 @@ console.log("chats:", chatsData);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: theme.colors.border,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   chatsList: {
     padding: 20,
@@ -164,7 +160,7 @@ const styles = StyleSheet.create({
   chatCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -181,7 +177,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: theme.colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -189,7 +185,7 @@ const styles = StyleSheet.create({
   userInitial: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   chatInfo: {
     flex: 1,
@@ -203,15 +199,15 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   timestamp: {
     fontSize: 12,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   lastMessage: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   loadingContainer: {
     flex: 1,
@@ -220,7 +216,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
@@ -229,19 +225,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -253,7 +249,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
   },
 });
