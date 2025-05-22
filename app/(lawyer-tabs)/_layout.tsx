@@ -11,7 +11,7 @@ export default function LawyerTabLayout() {
           borderTopWidth: 1,
           borderTopColor: '#e5e5e5',
         },
-        tabBarActiveTintColor: '#7C3AED',
+        tabBarActiveTintColor: '#2F3B7D',
         tabBarInactiveTintColor: '#64748b',
       }}>
       <Tabs.Screen
