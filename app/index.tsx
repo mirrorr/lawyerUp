@@ -6,7 +6,7 @@ export default function Welcome() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image 
-          source={require('../assets/images/logo2.png')}
+          source={require('../assets/images/logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 200,
-    height: 50,
+    width: 300,
+    height: 120,
     marginBottom: 40,
   },
   title: {
