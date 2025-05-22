@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platfo
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Plus, ChevronRight, Clock, User } from 'lucide-react-native';
+import { theme } from '@/constants/theme';
 
 export default function Cases() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -129,7 +130,7 @@ export default function Cases() {
             style={styles.newCaseButton}
             onPress={() => setShowNewCaseForm(true)}
           >
-            <Plus size={20} color="#ffffff" />
+            <Plus size={20} color={theme.colors.white} />
             <Text style={styles.newCaseButtonText}>New Case</Text>
           </TouchableOpacity>
         )}
@@ -226,19 +227,19 @@ export default function Cases() {
               <View style={styles.caseFooter}>
                 <View style={styles.caseInfo}>
                   <View style={styles.infoItem}>
-                    <Clock size={16} color="#64748b" />
+                    <Clock size={16} color={theme.colors.text.secondary} />
                     <Text style={styles.infoText}>
                       {new Date(case_.created_at).toLocaleDateString()}
                     </Text>
                   </View>
                   <View style={styles.infoItem}>
-                    <User size={16} color="#64748b" />
+                    <User size={16} color={theme.colors.text.secondary} />
                     <Text style={styles.infoText}>
                       {case_.lawyer ? case_.lawyer.name : 'No lawyer assigned'}
                     </Text>
                   </View>
                 </View>
-                <ChevronRight size={20} color="#64748b" />
+                <ChevronRight size={20} color={theme.colors.text.secondary} />
               </View>
             </TouchableOpacity>
           ))
@@ -251,14 +252,14 @@ export default function Cases() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: theme.colors.border,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   content: {
     flex: 1,
@@ -275,19 +276,19 @@ const styles = StyleSheet.create({
   newCaseButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
     gap: 8,
   },
   newCaseButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
   formContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 12,
     padding: 20,
     marginBottom: 20,
@@ -309,7 +310,7 @@ const styles = StyleSheet.create({
   formTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 20,
   },
   inputContainer: {
@@ -318,17 +319,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
   },
   textArea: {
     minHeight: 100,
@@ -345,21 +346,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
   },
   cancelButtonText: {
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     fontSize: 14,
     fontWeight: '600',
   },
   submitButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   submitButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   caseCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -395,7 +396,7 @@ const styles = StyleSheet.create({
   caseTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     flex: 1,
     marginRight: 12,
   },
@@ -405,13 +406,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   openBadge: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: theme.colors.info + '20',
   },
   inProgressBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: theme.colors.warning + '20',
   },
   closedBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: theme.colors.success + '20',
   },
   statusText: {
     fontSize: 12,
@@ -419,17 +420,17 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   openText: {
-    color: '#2563eb',
+    color: theme.colors.info,
   },
   inProgressText: {
-    color: '#d97706',
+    color: theme.colors.warning,
   },
   closedText: {
-    color: '#059669',
+    color: theme.colors.success,
   },
   caseDescription: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginBottom: 16,
     lineHeight: 20,
   },
@@ -449,7 +450,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   loadingContainer: {
     flex: 1,
@@ -458,7 +459,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   notAuthenticatedContainer: {
     flex: 1,
@@ -468,18 +469,18 @@ const styles = StyleSheet.create({
   },
   notAuthenticatedText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
     marginBottom: 20,
   },
   loginButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
   },
   loginButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -491,16 +492,16 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 14,
     marginBottom: 16,
   },
