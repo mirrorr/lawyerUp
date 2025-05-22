@@ -163,7 +163,7 @@ export default function LawyerProfile() {
 
   const handleStartChat = async () => {
     if (!isAuthenticated) {
-      router.push('/');
+      router.push('/auth/sign-in');
       return;
     }
 
@@ -287,13 +287,11 @@ export default function LawyerProfile() {
               <MapPin size={16} color="#64748b" />
               <Text style={styles.location}>{lawyer.location}</Text>
             </View>
-            {isAuthenticated && (
-              <View style={styles.ratingContainer}>
-                {renderStars(lawyer.rating)}
-                <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
-                <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
-              </View>
-            )}
+            <View style={styles.ratingContainer}>
+              {renderStars(lawyer.rating)}
+              <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
+              <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
+            </View>
           </View>
         </View>
 
@@ -335,9 +333,9 @@ export default function LawyerProfile() {
               <Text style={styles.loginPromptText}>
                 Sign in to see reviews and access chat features
               </Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.loginButton}
-                onPress={() => router.push('/')}
+                onPress={() => router.push('/auth/sign-in')}
               >
                 <Text style={styles.loginButtonText}>Sign In</Text>
               </TouchableOpacity>
@@ -484,6 +482,7 @@ const styles = StyleSheet.create({
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
   },
   location: {
     fontSize: 14,
@@ -493,7 +492,6 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
   },
   starsContainer: {
     flexDirection: 'row',

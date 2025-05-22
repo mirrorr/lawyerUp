@@ -49,7 +49,7 @@ export default function Appointments() {
           </Text>
           <TouchableOpacity 
             style={styles.loginButton}
-            onPress={() => router.push('/')}
+            onPress={() => router.push('/auth/sign-in')}
           >
             <Text style={styles.loginButtonText}>Sign In</Text>
           </TouchableOpacity>

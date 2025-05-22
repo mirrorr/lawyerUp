@@ -54,7 +54,7 @@ export default function Profile() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.replace('/');
+    router.replace('/auth/sign-in');
   };
 
   if (loading) {
@@ -82,7 +82,7 @@ export default function Profile() {
           </Text>
           <TouchableOpacity 
             style={styles.loginButton}
-            onPress={() => router.push('/')}
+            onPress={() => router.push('/auth/sign-in')}
           >
             <Text style={styles.loginButtonText}>Sign In</Text>
           </TouchableOpacity>
