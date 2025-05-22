@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut } from 'lucide-react-native';
+import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut, Briefcase } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 
@@ -35,6 +35,7 @@ const menuItems = [
 export default function Profile() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [lawyerStatus, setLawyerStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
 
   useEffect(() => {
     fetchUserProfile();
@@ -45,8 +46,19 @@ export default function Profile() {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
-    } catch (err: any) {
-      console.error('Error fetching user profile:', err);
+
+      if (user) {
+        // Check lawyer status
+        const { data: lawyer } = await supabase
+          .from('lawyers')
+          .select('validation_status')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        setLawyerStatus(lawyer ? lawyer.validation_status : 'none');
+      }
+    } catch (err) {
+      console.error('Error fetching profile:', err);
     } finally {
       setLoading(false);
     }
@@ -55,6 +67,28 @@ export default function Profile() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.replace('/auth/sign-in');
+  };
+
+  const handleLawyerSwitch = () => {
+    if (!user) {
+      router.push('/auth/sign-in');
+      return;
+    }
+
+    switch (lawyerStatus) {
+      case 'none':
+        router.push('/auth/lawyer-validation');
+        break;
+      case 'approved':
+        router.replace('/(lawyer-tabs)');
+        break;
+      case 'pending':
+        // Do nothing, show pending status
+        break;
+      case 'rejected':
+        // Do nothing, show rejected status
+        break;
+    }
   };
 
   if (loading) {
@@ -108,6 +142,35 @@ export default function Profile() {
             <Text style={styles.userTypeText}>Client</Text>
           </View>
         </View>
+
+        <TouchableOpacity 
+          style={[
+            styles.lawyerSwitchButton,
+            lawyerStatus === 'approved' && styles.lawyerSwitchButtonApproved,
+            lawyerStatus === 'rejected' && styles.lawyerSwitchButtonRejected,
+          ]} 
+          onPress={handleLawyerSwitch}
+          disabled={lawyerStatus === 'pending' || lawyerStatus === 'rejected'}
+        >
+          <Briefcase size={20} color={lawyerStatus === 'approved' ? '#ffffff' : '#1e293b'} />
+          <View style={styles.lawyerSwitchContent}>
+            <Text style={[
+              styles.lawyerSwitchTitle,
+              lawyerStatus === 'approved' && styles.lawyerSwitchTitleApproved,
+            ]}>
+              {lawyerStatus === 'none' && 'Become a Lawyer'}
+              {lawyerStatus === 'pending' && 'Lawyer Verification Pending'}
+              {lawyerStatus === 'approved' && 'Switch to Lawyer View'}
+              {lawyerStatus === 'rejected' && 'Lawyer Verification Rejected'}
+            </Text>
+            <Text style={styles.lawyerSwitchDescription}>
+              {lawyerStatus === 'none' && 'Create your lawyer profile and start helping clients'}
+              {lawyerStatus === 'pending' && 'Your lawyer profile is being reviewed'}
+              {lawyerStatus === 'approved' && 'Access your lawyer dashboard'}
+              {lawyerStatus === 'rejected' && 'Contact support for more information'}
+            </Text>
+          </View>
+        </TouchableOpacity>
 
         <View style={styles.menuSection}>
           {menuItems.map((item, index) => (
@@ -176,9 +239,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  lawyerSwitchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    marginTop: 16,
+    marginHorizontal: 20,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+    gap: 12,
+  },
+  lawyerSwitchButtonApproved: {
+    backgroundColor: '#7C3AED',
+    borderColor: '#7C3AED',
+  },
+  lawyerSwitchButtonRejected: {
+    backgroundColor: '#fee2e2',
+    borderColor: '#fee2e2',
+  },
+  lawyerSwitchContent: {
+    flex: 1,
+  },
+  lawyerSwitchTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  lawyerSwitchTitleApproved: {
+    color: '#ffffff',
+  },
+  lawyerSwitchDescription: {
+    fontSize: 14,
+    color: '#64748b',
+  },
   menuSection: {
     backgroundColor: '#ffffff',
-    marginTop: 20,
+    marginTop: 16,
     paddingHorizontal: 20,
   },
   menuItem: {
