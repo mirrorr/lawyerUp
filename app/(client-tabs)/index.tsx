@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 50,
     marginBottom: 16,
-    alignItems: 'center',
+    alignSelf: 'center',
   },
   searchContainer: {
     flexDirection: 'row',
