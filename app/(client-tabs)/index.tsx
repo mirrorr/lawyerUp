@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Platform, Image } from 'react-native';
 import { Search, MapPin, Star, ChevronDown } from 'lucide-react-native';
 import { Link } from 'expo-router';
 import { supabase } from '@/lib/supabase';
