@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Link, router } from "expo-router";
+import { theme } from '@/constants/theme';
 
 export default function Welcome() {
   return (
@@ -38,7 +39,7 @@ export default function Welcome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.colors.white,
   },
   header: {
     flex: 1,
@@ -54,13 +55,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: "700",
-    color: "#1e293b",
+    color: theme.colors.text.primary,
     textAlign: "center",
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
-    color: "#64748b",
+    color: theme.colors.text.secondary,
     textAlign: "center",
     maxWidth: "80%",
   },
@@ -69,41 +70,41 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   button: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: theme.colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
     marginBottom: 12,
   },
   buttonText: {
-    color: "#ffffff",
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: "600",
   },
   signUpButton: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: theme.colors.background,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#7C3AED",
+    borderColor: theme.colors.primary,
   },
   signUpButtonText: {
-    color: "#7C3AED",
+    color: theme.colors.primary,
     fontSize: 16,
     fontWeight: "600",
   },
   guestButton: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: theme.colors.background,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: theme.colors.border,
   },
   guestButtonText: {
-    color: "#64748b",
+    color: theme.colors.text.secondary,
     fontSize: 16,
     fontWeight: "600",
   },

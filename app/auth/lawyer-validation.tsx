@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { ArrowLeft } from 'lucide-react-native';
+import { theme } from '@/constants/theme';
 
 export default function LawyerValidation() {
   const [formData, setFormData] = useState({
@@ -69,7 +70,7 @@ export default function LawyerValidation() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#1e293b" />
+          <ArrowLeft size={24} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.title}>Profile Validation</Text>
         <Text style={styles.subtitle}>Please provide your professional details</Text>
@@ -159,7 +160,7 @@ export default function LawyerValidation() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
   },
   header: {
     padding: 20,
@@ -171,12 +172,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   form: {
     padding: 20,
@@ -187,20 +188,20 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
   },
   button: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -210,18 +211,18 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   buttonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
   errorContainer: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: theme.colors.error + '20',
     borderRadius: 12,
     padding: 16,
     margin: 20,
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 14,
   },
 });
