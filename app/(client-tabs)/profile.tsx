@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut, Briefcase } from 'lucide-react-native';
-import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
+import { supabase } from '@/lib/supabase';
+import { theme } from '@/constants/theme';
 
 const menuItems = [
   {
@@ -152,7 +153,7 @@ export default function Profile() {
           onPress={handleLawyerSwitch}
           disabled={lawyerStatus === 'pending' || lawyerStatus === 'rejected'}
         >
-          <Briefcase size={20} color={lawyerStatus === 'approved' ? '#ffffff' : '#1e293b'} />
+          <Briefcase size={20} color={lawyerStatus === 'approved' ? theme.colors.white : theme.colors.text.primary} />
           <View style={styles.lawyerSwitchContent}>
             <Text style={[
               styles.lawyerSwitchTitle,
@@ -176,7 +177,7 @@ export default function Profile() {
           {menuItems.map((item, index) => (
             <TouchableOpacity key={index} style={styles.menuItem}>
               <View style={styles.menuItemContent}>
-                <item.icon size={20} color="#64748b" />
+                <item.icon size={20} color={theme.colors.text.secondary} />
                 <Text style={styles.menuItemText}>{item.title}</Text>
               </View>
             </TouchableOpacity>
@@ -184,7 +185,7 @@ export default function Profile() {
 
           <TouchableOpacity style={[styles.menuItem, styles.logoutButton]} onPress={handleSignOut}>
             <View style={styles.menuItemContent}>
-              <LogOut size={20} color="#ef4444" />
+              <LogOut size={20} color={theme.colors.error} />
               <Text style={[styles.menuItemText, styles.logoutText]}>Log Out</Text>
             </View>
           </TouchableOpacity>
@@ -197,17 +198,17 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   content: {
     flex: 1,
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
   },
   profileImage: {
     width: 100,
@@ -225,39 +226,39 @@ const styles = StyleSheet.create({
   },
   email: {
     fontSize: 18,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 8,
   },
   userTypeBadge: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: theme.colors.info + '20',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
   },
   userTypeText: {
-    color: '#2563eb',
+    color: theme.colors.info,
     fontSize: 14,
     fontWeight: '500',
   },
   lawyerSwitchButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     marginTop: 16,
     marginHorizontal: 20,
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
     gap: 12,
   },
   lawyerSwitchButtonApproved: {
-    backgroundColor: '#7C3AED',
-    borderColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   lawyerSwitchButtonRejected: {
-    backgroundColor: '#fee2e2',
-    borderColor: '#fee2e2',
+    backgroundColor: theme.colors.error + '20',
+    borderColor: theme.colors.error + '20',
   },
   lawyerSwitchContent: {
     flex: 1,
@@ -265,25 +266,25 @@ const styles = StyleSheet.create({
   lawyerSwitchTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   lawyerSwitchTitleApproved: {
-    color: '#ffffff',
+    color: theme.colors.white,
   },
   lawyerSwitchDescription: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   menuSection: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     marginTop: 16,
     paddingHorizontal: 20,
   },
   menuItem: {
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: theme.colors.border,
   },
   menuItemContent: {
     flexDirection: 'row',
@@ -291,14 +292,14 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginLeft: 12,
   },
   logoutButton: {
     borderBottomWidth: 0,
   },
   logoutText: {
-    color: '#ef4444',
+    color: theme.colors.error,
   },
   loadingContainer: {
     flex: 1,
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   notAuthenticatedContainer: {
     flex: 1,
@@ -317,18 +318,18 @@ const styles = StyleSheet.create({
   },
   notAuthenticatedText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
     marginBottom: 20,
   },
   loginButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
   },
   loginButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
