@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut } from 'lucide-react-native';
+import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut, User } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 
@@ -157,6 +157,19 @@ export default function LawyerProfile() {
           </View>
         </View>
 
+        <TouchableOpacity 
+          style={styles.clientSwitchButton} 
+          onPress={() => router.replace('/(client-tabs)')}
+        >
+          <User size={20} color="#1e293b" />
+          <View style={styles.clientSwitchContent}>
+            <Text style={styles.clientSwitchTitle}>Switch to Client View</Text>
+            <Text style={styles.clientSwitchDescription}>
+              Browse and connect with other lawyers
+            </Text>
+          </View>
+        </TouchableOpacity>
+
         <View style={styles.menuSection}>
           {menuItems.map((item, index) => (
             <TouchableOpacity key={index} style={styles.menuItem}>
@@ -286,6 +299,31 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 16,
     color: '#1e293b',
+  },
+  clientSwitchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    marginTop: 12,
+    marginHorizontal: 20,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+    gap: 12,
+  },
+  clientSwitchContent: {
+    flex: 1,
+  },
+  clientSwitchTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  clientSwitchDescription: {
+    fontSize: 14,
+    color: '#64748b',
   },
   menuSection: {
     backgroundColor: '#ffffff',
