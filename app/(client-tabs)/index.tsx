@@ -28,13 +28,11 @@ const sortOptions: SortOption[] = [
 export default function FindLawyers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [lawyers, setLawyers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>(sortOptions[0]);
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
 
   useEffect(() => {
     fetchLawyers();
@@ -52,14 +50,6 @@ export default function FindLawyers() {
       const { data, error: fetchError } = await query;
 
       if (fetchError) throw fetchError;
-
-      // Extract unique languages from all lawyers
-      const languages = new Set<string>();
-      data?.forEach(lawyer => {
-        lawyer.languages.forEach((lang: string) => languages.add(lang));
-      });
-      setAvailableLanguages(Array.from(languages).sort());
-
       setLawyers(data || []);
     } catch (err) {
       setError('Failed to load lawyers');
@@ -78,20 +68,9 @@ export default function FindLawyers() {
 
       const matchesSpecialty = !selectedSpecialty || lawyer.specialty === selectedSpecialty;
 
-      const matchesLanguages = selectedLanguages.length === 0 || 
-        selectedLanguages.every(lang => lawyer.languages.includes(lang));
-
-      return matchesSearch && matchesSpecialty && matchesLanguages;
+      return matchesSearch && matchesSpecialty;
     });
-  }, [searchQuery, selectedSpecialty, selectedLanguages, lawyers]);
-
-  const toggleLanguage = (language: string) => {
-    setSelectedLanguages(prev => 
-      prev.includes(language)
-        ? prev.filter(l => l !== language)
-        : [...prev, language]
-    );
-  };
+  }, [searchQuery, selectedSpecialty, lawyers]);
 
   // Close sort menu when clicking outside
   useEffect(() => {
@@ -221,31 +200,6 @@ export default function FindLawyers() {
             </View>
           )}
         </View>
-
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          style={styles.languagesContainer}
-          contentContainerStyle={styles.languagesContent}
-        >
-          {availableLanguages.map((language) => (
-            <TouchableOpacity
-              key={language}
-              style={[
-                styles.languageChip,
-                selectedLanguages.includes(language) && styles.selectedLanguage,
-              ]}
-              onPress={() => toggleLanguage(language)}>
-              <Text
-                style={[
-                  styles.languageText,
-                  selectedLanguages.includes(language) && styles.selectedLanguageText,
-                ]}>
-                {language}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
       </View>
 
       <ScrollView 
@@ -270,13 +224,6 @@ export default function FindLawyers() {
                     <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
                     <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
                   </View>
-                  <View style={styles.languagesContainer}>
-                    {lawyer.languages.map((language: string) => (
-                      <View key={language} style={styles.languageBadge}>
-                        <Text style={styles.languageBadgeText}>{language}</Text>
-                      </View>
-                    ))}
-                  </View>
                 </View>
               </View>
             </Link>
@@ -289,7 +236,6 @@ export default function FindLawyers() {
               onPress={() => {
                 setSearchQuery('');
                 setSelectedSpecialty('');
-                setSelectedLanguages([]);
               }}>
               <Text style={styles.resetButtonText}>Reset Search</Text>
             </TouchableOpacity>
@@ -424,31 +370,6 @@ const styles = StyleSheet.create({
     color: '#1e293b',
     fontWeight: '600',
   },
-  languagesContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-  },
-  languagesContent: {
-    padding: 12,
-  },
-  languageChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  selectedLanguage: {
-    backgroundColor: '#7C3AED',
-  },
-  languageText: {
-    color: '#64748b',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  selectedLanguageText: {
-    color: '#ffffff',
-  },
   lawyersList: {
     flex: 1,
   },
@@ -508,7 +429,6 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   rating: {
     fontSize: 14,
@@ -520,18 +440,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     marginLeft: 4,
-  },
-  languageBadge: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 8,
-    marginBottom: 4,
-  },
-  languageBadgeText: {
-    fontSize: 12,
-    color: '#64748b',
   },
   noResults: {
     alignItems: 'center',
