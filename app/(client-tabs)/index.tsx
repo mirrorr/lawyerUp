@@ -199,7 +199,7 @@ export default function FindLawyers() {
             onPress={() => setShowProBonoOnly(!showProBonoOnly)}
           >
             <Text style={[styles.proBonoToggleText, showProBonoOnly && styles.proBonoToggleTextActive]}>
-              Pro Bono Only
+              Pro Bono Offered
             </Text>
           </TouchableOpacity>
 
