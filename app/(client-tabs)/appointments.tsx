@@ -3,6 +3,7 @@ import { Calendar, Clock, Video } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useState, useEffect } from 'react';
+import { theme } from '@/constants/theme';
 
 export default function Appointments() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -79,17 +80,17 @@ export default function Appointments() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   appointmentsList: {
     padding: 20,
@@ -102,18 +103,18 @@ const styles = StyleSheet.create({
   },
   notAuthenticatedText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
     marginBottom: 20,
   },
   loginButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
   },
   loginButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   emptyContainer: {
     flex: 1,
@@ -135,13 +136,13 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
   },
 });
