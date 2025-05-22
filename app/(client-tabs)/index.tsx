@@ -141,16 +141,16 @@ export default function FindLawyers() {
           style={styles.logo}
           resizeMode="contain"
         />
-        <View style={styles.searchContainer}>
-          <Search size={20} color={theme.colors.text.secondary} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by name, location, or specialty..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor={theme.colors.text.secondary}
-          />
-        </View>
+      </View>
+      <View style={styles.searchContainer}>
+        <Search size={20} color={theme.colors.text.secondary} style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by name, location, or specialty..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor={theme.colors.text.secondary}
+        />
       </View>
 
       <View style={styles.filtersContainer}>
