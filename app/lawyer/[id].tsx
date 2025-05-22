@@ -28,6 +28,12 @@ interface Lawyer {
   about: string;
 }
 
+interface ProBonoPeriod {
+  id: string;
+  start_date: string;
+  end_date: string;
+}
+
 export default function LawyerProfile() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
@@ -42,6 +48,8 @@ export default function LawyerProfile() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [canReview, setCanReview] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [proBonoPeriods, setProBonoPeriods] = useState<ProBonoPeriod[]>([]);
+  const [isCurrentlyProBono, setIsCurrentlyProBono] = useState(false);
 
   useEffect(() => {
     checkAuthStatus();
@@ -60,16 +68,33 @@ export default function LawyerProfile() {
   const fetchLawyer = async () => {
     try {
       setLoading(true);
+      const today = new Date().toISOString().split('T')[0];
+
+      // Fetch lawyer profile and pro bono periods
       const { data, error: fetchError } = await supabase
         .from('lawyers')
-        .select('*')
+        .select(`
+          *,
+          pro_bono_periods(
+            id,
+            start_date,
+            end_date
+          )
+        `)
         .eq('id', id)
         .single();
 
       if (fetchError) throw fetchError;
       if (!data) throw new Error('Lawyer not found');
 
+      // Check if any pro bono period is currently active
+      const isProBono = data.pro_bono_periods?.some((period: ProBonoPeriod) => 
+        period.start_date <= today && period.end_date >= today
+      ) || false;
+
       setLawyer(data);
+      setProBonoPeriods(data.pro_bono_periods || []);
+      setIsCurrentlyProBono(isProBono);
     } catch (err: any) {
       setError(err.message);
       console.error('Error fetching lawyer:', err);
@@ -292,6 +317,11 @@ export default function LawyerProfile() {
               <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
               <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
             </View>
+            {isCurrentlyProBono && (
+              <View style={styles.proBonoBadge}>
+                <Text style={styles.proBonoBadgeText}>Pro Bono</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -324,6 +354,20 @@ export default function LawyerProfile() {
           <Text style={styles.sectionTitle}>About</Text>
           <Text style={styles.about}>{lawyer.about}</Text>
         </View>
+
+        {proBonoPeriods.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Pro Bono Availability</Text>
+            {proBonoPeriods.map((period, index) => (
+              <View key={index} style={styles.proBonoPeriod}>
+                <Calendar size={20} color="#64748b" />
+                <Text style={styles.periodText}>
+                  {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Reviews</Text>
@@ -722,5 +766,30 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  proBonoBadge: {
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  proBonoBadgeText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#dc2626',
+  },
+  proBonoPeriod: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    gap: 12,
+  },
+  periodText: {
+    fontSize: 14,
+    color: '#1e293b',
   },
 });
