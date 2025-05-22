@@ -26,7 +26,6 @@ export default function MainLayout() {
           .maybeSingle();
 
         if (error && error.code !== 'PGRST116') throw error;
-        
         setIsLawyer(!!data && data.validation_status === 'approved');
       } catch (err) {
         console.error('Error checking lawyer status:', err);
@@ -51,11 +50,7 @@ export default function MainLayout() {
         ) : isLawyer ? (
           <Stack.Screen name="(lawyer-tabs)" options={{ gestureEnabled: false }} />
         ) : (
-          <>
-            <Stack.Screen name="auth/user-type" options={{ gestureEnabled: false }} />
-            <Stack.Screen name="auth/lawyer-validation" options={{ gestureEnabled: false }} />
-            <Stack.Screen name="(client-tabs)" options={{ gestureEnabled: false }} />
-          </>
+          <Stack.Screen name="(client-tabs)" options={{ gestureEnabled: false }} />
         )}
       </Stack>
       <StatusBar style="auto" />
