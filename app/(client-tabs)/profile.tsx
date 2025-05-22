@@ -35,7 +35,6 @@ const menuItems = [
 export default function Profile() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUserProfile();
@@ -45,11 +44,8 @@ export default function Profile() {
     try {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
       setUser(user);
     } catch (err: any) {
-      setError(err.message);
       console.error('Error fetching user profile:', err);
     } finally {
       setLoading(false);
@@ -74,16 +70,21 @@ export default function Profile() {
     );
   }
 
-  if (error) {
+  if (!user) {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>Profile</Text>
         </View>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchUserProfile}>
-            <Text style={styles.retryButtonText}>Retry</Text>
+        <View style={styles.notAuthenticatedContainer}>
+          <Text style={styles.notAuthenticatedText}>
+            Sign in to access your profile and manage your account
+          </Text>
+          <TouchableOpacity 
+            style={styles.loginButton}
+            onPress={() => router.push('/auth/sign-in')}
+          >
+            <Text style={styles.loginButtonText}>Sign In</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -209,27 +210,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#64748b',
   },
-  errorContainer: {
+  notAuthenticatedContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
-  errorText: {
-    color: '#ef4444',
+  notAuthenticatedText: {
     fontSize: 16,
+    color: '#64748b',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  retryButton: {
+  loginButton: {
     backgroundColor: '#7C3AED',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
     borderRadius: 12,
   },
-  retryButtonText: {
+  loginButtonText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
 });
