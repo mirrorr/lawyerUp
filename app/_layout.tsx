@@ -14,8 +14,6 @@ export default function RootLayout() {
     <>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="auth" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="(client-tabs)" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="(lawyer-tabs)" options={{ gestureEnabled: false }} />
       </Stack>
       <StatusBar style="auto" />
     </>
