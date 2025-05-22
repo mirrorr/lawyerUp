@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Link, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/constants/theme';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -126,7 +127,7 @@ export default function SignUp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     padding: 20,
   },
   header: {
@@ -136,12 +137,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   form: {
     flex: 1,
@@ -152,20 +153,20 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
   },
   button: {
-    backgroundColor: '#2F3B7D',
+    backgroundColor: theme.colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   buttonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -185,14 +186,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   footerText: {
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     fontSize: 14,
   },
   link: {
     textDecorationLine: 'none',
   },
   linkText: {
-    color: '#2F3B7D',
+    color: theme.colors.primary,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -203,7 +204,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 14,
   },
 });
