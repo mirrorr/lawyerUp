@@ -47,11 +47,15 @@ export default function MainLayout() {
     <View style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
         {!session ? (
-          <Stack.Screen name="auth" />
+          <Stack.Screen name="auth" options={{ gestureEnabled: false }} />
         ) : isLawyer ? (
-          <Stack.Screen name="(lawyer-tabs)" />
+          <Stack.Screen name="(lawyer-tabs)" options={{ gestureEnabled: false }} />
         ) : (
-          <Stack.Screen name="(client-tabs)" />
+          <>
+            <Stack.Screen name="auth/user-type" options={{ gestureEnabled: false }} />
+            <Stack.Screen name="auth/lawyer-validation" options={{ gestureEnabled: false }} />
+            <Stack.Screen name="(client-tabs)" options={{ gestureEnabled: false }} />
+          </>
         )}
       </Stack>
       <StatusBar style="auto" />
