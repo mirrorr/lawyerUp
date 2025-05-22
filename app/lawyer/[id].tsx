@@ -3,6 +3,7 @@ import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Platform, 
 import { useLocalSearchParams, Link, useRouter } from 'expo-router';
 import { MapPin, Star, MessageSquare, Calendar, Clock, Briefcase, Award, Globe, ArrowLeft } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/constants/theme';
 
 interface Review {
   id: string;
@@ -471,7 +472,7 @@ export default function LawyerProfile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   navigationHeader: {
     flexDirection: 'row',
@@ -479,9 +480,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: theme.colors.border,
   },
   backButton: {
     padding: 8,
@@ -490,7 +491,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   scrollContainer: {
     flex: 1,
@@ -498,9 +499,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     padding: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: theme.colors.border,
   },
   profileImage: {
     width: 100,
@@ -515,12 +516,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   specialty: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginBottom: 8,
   },
   locationContainer: {
@@ -530,7 +531,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginLeft: 4,
   },
   ratingContainer: {
@@ -545,23 +546,23 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginLeft: 4,
   },
   reviews: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginLeft: 4,
   },
   section: {
     padding: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     marginTop: 12,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 16,
   },
   infoGrid: {
@@ -577,46 +578,46 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginTop: 8,
     marginBottom: 4,
   },
   infoValue: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     textAlign: 'center',
   },
   about: {
     fontSize: 16,
-    color: '#334155',
+    color: theme.colors.text.primary,
     lineHeight: 24,
   },
   loginPromptContainer: {
     padding: 20,
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 12,
   },
   loginPromptText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
     marginBottom: 16,
   },
   loginButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   loginButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
   reviewForm: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
@@ -624,7 +625,7 @@ const styles = StyleSheet.create({
   reviewFormTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 12,
   },
   ratingInput: {
@@ -632,35 +633,35 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   commentInput: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     minHeight: 100,
     textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
   },
   submitButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: theme.colors.info,
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
     marginTop: 12,
   },
   submitButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
   reviewCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -671,7 +672,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: theme.colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -679,7 +680,7 @@ const styles = StyleSheet.create({
   reviewerInitial: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   reviewInfo: {
     flex: 1,
@@ -687,28 +688,28 @@ const styles = StyleSheet.create({
   reviewerName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 2,
   },
   reviewDate: {
     fontSize: 12,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   reviewComment: {
     fontSize: 14,
-    color: '#334155',
+    color: theme.colors.text.primary,
     marginTop: 8,
     lineHeight: 20,
   },
   noReviews: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
     padding: 20,
   },
   actionButtons: {
     padding: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     marginTop: 12,
     marginBottom: 20,
   },
@@ -724,13 +725,13 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   messageButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: theme.colors.info,
   },
   scheduleButton: {
-    backgroundColor: '#059669',
+    backgroundColor: theme.colors.success,
   },
   buttonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -742,7 +743,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
@@ -752,23 +753,23 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#ef4444',
+    color: theme.colors.error,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
   proBonoBadge: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: theme.colors.error + '20',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
@@ -777,12 +778,12 @@ const styles = StyleSheet.create({
   proBonoBadgeText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#dc2626',
+    color: theme.colors.error,
   },
   proBonoPeriod: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
@@ -790,6 +791,6 @@ const styles = StyleSheet.create({
   },
   periodText: {
     fontSize: 14,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
 });
