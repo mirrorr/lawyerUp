@@ -141,16 +141,16 @@ export default function FindLawyers() {
           style={styles.logo}
           resizeMode="contain"
         />
-      </View>
-      <View style={styles.searchContainer}>
-        <Search size={20} color={theme.colors.text.secondary} style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by name, location, or specialty..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholderTextColor={theme.colors.text.secondary}
-        />
+        <View style={styles.searchContainer}>
+          <Search size={20} color={theme.colors.text.secondary} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by name, location, or specialty..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor={theme.colors.text.secondary}
+          />
+        </View>
       </View>
 
       <View style={styles.filtersContainer}>
@@ -303,15 +303,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
-    alignItems: 'center',
   },
   logo: {
     width: 200,
     height: 50,
     marginBottom: 16,
+    alignItems: 'center',
   },
   searchContainer: {
-    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.background,
