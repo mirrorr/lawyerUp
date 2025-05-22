@@ -50,7 +50,7 @@ export default function MainLayout() {
         ) : isLawyer ? (
           <Stack.Screen name="(lawyer-tabs)" options={{ gestureEnabled: false }} />
         ) : (
-          <Stack.Screen name="(client-tabs)" options={{ gestureEnabled: false }} />
+          <Stack.Screen name="(lawyer-tabs)" options={{ gestureEnabled: false }} />
         )}
       </Stack>
       <StatusBar style="auto" />
