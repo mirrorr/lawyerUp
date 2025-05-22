@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput,
 import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut, User, Calendar, CreditCard as Edit2, Plus, X } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
+import { theme } from '@/constants/theme';
 
 const menuItems = [
   {
@@ -193,7 +194,7 @@ export default function LawyerProfile() {
             style={styles.editButton}
             onPress={() => setIsEditing(true)}
           >
-            <Edit2 size={20} color="#7C3AED" />
+            <Edit2 size={20} color={theme.colors.primary} />
           </TouchableOpacity>
         )}
       </View>
@@ -359,7 +360,7 @@ export default function LawyerProfile() {
               style={styles.addButton}
               onPress={() => setShowAddProBono(true)}
             >
-              <Plus size={20} color="#7C3AED" />
+              <Plus size={20} color={theme.colors.primary} />
             </TouchableOpacity>
           </View>
 
@@ -406,7 +407,7 @@ export default function LawyerProfile() {
           {proBonoPeriods.map((period) => (
             <View key={period.id} style={styles.proBonoPeriod}>
               <View style={styles.periodInfo}>
-                <Calendar size={16} color="#64748b" />
+                <Calendar size={16} color={theme.colors.text.secondary} />
                 <Text style={styles.periodText}>
                   {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
                 </Text>
@@ -415,7 +416,7 @@ export default function LawyerProfile() {
                 style={styles.deleteButton}
                 onPress={() => handleDeleteProBono(period.id)}
               >
-                <X size={16} color="#ef4444" />
+                <X size={16} color={theme.colors.error} />
               </TouchableOpacity>
             </View>
           ))}
@@ -429,7 +430,7 @@ export default function LawyerProfile() {
           style={styles.clientSwitchButton} 
           onPress={() => router.replace('/(client-tabs)')}
         >
-          <User size={20} color="#1e293b" />
+          <User size={20} color={theme.colors.text.primary} />
           <View style={styles.clientSwitchContent}>
             <Text style={styles.clientSwitchTitle}>Switch to Client View</Text>
             <Text style={styles.clientSwitchDescription}>
@@ -442,7 +443,7 @@ export default function LawyerProfile() {
           {menuItems.map((item, index) => (
             <TouchableOpacity key={index} style={styles.menuItem}>
               <View style={styles.menuItemContent}>
-                <item.icon size={20} color="#64748b" />
+                <item.icon size={20} color={theme.colors.text.secondary} />
                 <Text style={styles.menuItemText}>{item.title}</Text>
               </View>
             </TouchableOpacity>
@@ -450,7 +451,7 @@ export default function LawyerProfile() {
 
           <TouchableOpacity style={[styles.menuItem, styles.logoutButton]} onPress={handleSignOut}>
             <View style={styles.menuItemContent}>
-              <LogOut size={20} color="#ef4444" />
+              <LogOut size={20} color={theme.colors.error} />
               <Text style={[styles.menuItemText, styles.logoutText]}>Log Out</Text>
             </View>
           </TouchableOpacity>
@@ -463,7 +464,7 @@ export default function LawyerProfile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -471,17 +472,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   editButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -489,7 +490,7 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
   },
   profileImage: {
     width: 100,
@@ -505,17 +506,17 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
   },
   textArea: {
     minHeight: 100,
@@ -532,21 +533,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
   },
   cancelButtonText: {
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     fontSize: 14,
     fontWeight: '600',
   },
   saveButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   saveButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -556,40 +557,40 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   specialty: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginBottom: 12,
   },
   validationStatus: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: theme.colors.background,
   },
   approvedStatus: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: theme.colors.success + '20',
   },
   rejectedStatus: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: theme.colors.error + '20',
   },
   validationText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   approvedText: {
-    color: '#059669',
+    color: theme.colors.success,
   },
   rejectedText: {
-    color: '#ef4444',
+    color: theme.colors.error,
   },
   statsSection: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     marginTop: 12,
     padding: 20,
     justifyContent: 'center',
@@ -602,21 +603,21 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: theme.colors.border,
     marginHorizontal: 20,
   },
   statValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   infoSection: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     marginTop: 12,
     padding: 20,
   },
@@ -625,15 +626,15 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginBottom: 4,
   },
   infoValue: {
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   section: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     marginTop: 12,
     padding: 20,
   },
@@ -646,15 +647,15 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   addButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: theme.colors.background,
   },
   addProBonoForm: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -665,7 +666,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 8,
     marginBottom: 8,
   },
@@ -676,27 +677,27 @@ const styles = StyleSheet.create({
   },
   periodText: {
     fontSize: 14,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   deleteButton: {
     padding: 8,
   },
   noPeriodsText: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
     paddingVertical: 16,
   },
   clientSwitchButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     marginTop: 12,
     marginHorizontal: 20,
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
     gap: 12,
   },
   clientSwitchContent: {
@@ -705,22 +706,22 @@ const styles = StyleSheet.create({
   clientSwitchTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   clientSwitchDescription: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   menuSection: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     marginTop: 12,
     paddingHorizontal: 20,
   },
   menuItem: {
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: theme.colors.border,
   },
   menuItemContent: {
     flexDirection: 'row',
@@ -728,14 +729,14 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginLeft: 12,
   },
   logoutButton: {
     borderBottomWidth: 0,
   },
   logoutText: {
-    color: '#ef4444',
+    color: theme.colors.error,
   },
   loadingContainer: {
     flex: 1,
@@ -744,7 +745,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
@@ -753,19 +754,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
