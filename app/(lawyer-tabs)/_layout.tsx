@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { MessageSquare, Calendar, User, Home } from 'lucide-react-native';
+import { MessageSquare, Calendar, User, Home, Briefcase } from 'lucide-react-native';
 
 export default function LawyerTabLayout() {
   return (
@@ -19,6 +19,13 @@ export default function LawyerTabLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="cases"
+        options={{
+          title: 'Cases',
+          tabBarIcon: ({ color, size }) => <Briefcase size={size} color={color} />,
         }}
       />
       <Tabs.Screen
