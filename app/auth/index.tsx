@@ -1,15 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 
 export default function Welcome() {
-  const handleSignIn = () => {
-    router.push('/auth/sign-up');
-  };
-
-  const handleContinueAsGuest = () => {
-    router.replace('/(tabs)');
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -22,11 +14,22 @@ export default function Welcome() {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-          <Text style={styles.buttonText}>Get Started</Text>
-        </TouchableOpacity>
+        <Link href="/auth/sign-in" asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>Sign In</Text>
+          </TouchableOpacity>
+        </Link>
 
-        <TouchableOpacity style={styles.guestButton} onPress={handleContinueAsGuest}>
+        <Link href="/auth/sign-up" asChild>
+          <TouchableOpacity style={styles.signUpButton}>
+            <Text style={styles.signUpButtonText}>Create Account</Text>
+          </TouchableOpacity>
+        </Link>
+
+        <TouchableOpacity 
+          style={styles.guestButton} 
+          onPress={() => router.replace('/(client-tabs)')}
+        >
           <Text style={styles.guestButtonText}>Continue as Guest</Text>
         </TouchableOpacity>
       </View>
@@ -77,6 +80,20 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  signUpButton: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+  },
+  signUpButtonText: {
+    color: '#7C3AED',
     fontSize: 16,
     fontWeight: '600',
   },
