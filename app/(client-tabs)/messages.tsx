@@ -53,6 +53,46 @@ export default function Messages() {
     }
   };
 
+  const renderChatCard = (chat: any) => (
+    <View style={styles.messageCardWrapper} key={chat.id}>
+      <Link href={`/chat/${chat.id}`} style={Platform.select({ web: { textDecoration: 'none' } })}>
+        <TouchableOpacity style={styles.messageCard}>
+          <Image source={{ uri: chat.lawyer.image_url }} style={styles.lawyerImage} />
+          <View style={styles.messageContent}>
+            <View style={styles.messageHeader}>
+              <Text style={styles.lawyerName}>{chat.lawyer.name}</Text>
+              <Text style={styles.timestamp}>{new Date(chat.created_at).toLocaleDateString()}</Text>
+            </View>
+            <View style={styles.messagePreview}>
+              <Text style={styles.lastMessage}>Last message preview</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Link>
+    </View>
+  );
+
+  const renderGrid = () => {
+    const rows = [];
+    for (let i = 0; i < chats.length; i += numColumns) {
+      const row = [];
+      for (let j = 0; j < numColumns; j++) {
+        const index = i + j;
+        if (index < chats.length) {
+          row.push(renderChatCard(chats[index]));
+        } else {
+          row.push(
+            <View key={`empty-${j}`} style={[styles.messageCardWrapper, { flex: 1, marginHorizontal: 10 }]}>
+              <View style={[styles.messageCard, styles.emptyCard]} />
+            </View>
+          );
+        }
+      }
+      rows.push(<View key={i} style={styles.row}>{row}</View>);
+    }
+    return rows;
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
