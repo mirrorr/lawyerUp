@@ -33,10 +33,17 @@ export default function FindLawyers() {
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>(sortOptions[0]);
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    checkAuthStatus();
     fetchLawyers();
   }, [sortBy]);
+
+  const checkAuthStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsAuthenticated(!!user);
+  };
 
   const fetchLawyers = async () => {
     try {
@@ -219,11 +226,13 @@ export default function FindLawyers() {
                     <MapPin size={14} color="#64748b" />
                     <Text style={styles.location}>{lawyer.location}</Text>
                   </View>
-                  <View style={styles.ratingContainer}>
-                    <Star size={14} color="#fbbf24" fill="#fbbf24" />
-                    <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
-                    <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
-                  </View>
+                  {isAuthenticated && (
+                    <View style={styles.ratingContainer}>
+                      <Star size={14} color="#fbbf24" fill="#fbbf24" />
+                      <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
+                      <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </Link>
@@ -419,7 +428,6 @@ const styles = StyleSheet.create({
   locationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   location: {
     fontSize: 14,
@@ -429,6 +437,7 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 8,
   },
   rating: {
     fontSize: 14,
