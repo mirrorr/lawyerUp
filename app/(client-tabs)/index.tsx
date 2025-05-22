@@ -34,11 +34,12 @@ export default function FindLawyers() {
   const [sortBy, setSortBy] = useState<SortOption>(sortOptions[0]);
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showProBonoOnly, setShowProBonoOnly] = useState(false);
 
   useEffect(() => {
     checkAuthStatus();
     fetchLawyers();
-  }, [sortBy]);
+  }, [sortBy, showProBonoOnly]);
 
   const checkAuthStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -53,6 +54,10 @@ export default function FindLawyers() {
         .select('*')
         .eq('validation_status', 'approved')
         .order(sortBy.value, { ascending: sortBy.order === 'asc' });
+
+      if (showProBonoOnly) {
+        query = query.eq('pro_bono', true);
+      }
 
       const { data, error: fetchError } = await query;
 
@@ -173,39 +178,50 @@ export default function FindLawyers() {
           ))}
         </ScrollView>
 
-        <View style={[styles.sortContainer, Platform.OS === 'web' && { className: 'sort-container' }]}>
-          <TouchableOpacity 
-            style={styles.sortButton}
-            onPress={() => setShowSortMenu(!showSortMenu)}
+        <View style={styles.filterActions}>
+          <TouchableOpacity
+            style={[styles.proBonoToggle, showProBonoOnly && styles.proBonoToggleActive]}
+            onPress={() => setShowProBonoOnly(!showProBonoOnly)}
           >
-            <Text style={styles.sortButtonText}>{sortBy.label}</Text>
-            <ChevronDown size={16} color="#64748b" />
+            <Text style={[styles.proBonoToggleText, showProBonoOnly && styles.proBonoToggleTextActive]}>
+              Pro Bono Only
+            </Text>
           </TouchableOpacity>
 
-          {showSortMenu && (
-            <View style={[styles.sortMenu, Platform.OS === 'web' && styles.sortMenuWeb]}>
-              {sortOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  style={[
-                    styles.sortOption,
-                    sortBy.value === option.value && styles.selectedSortOption,
-                  ]}
-                  onPress={() => {
-                    setSortBy(option);
-                    setShowSortMenu(false);
-                  }}
-                >
-                  <Text style={[
-                    styles.sortOptionText,
-                    sortBy.value === option.value && styles.selectedSortOptionText,
-                  ]}>
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <View style={[styles.sortContainer, Platform.OS === 'web' && { className: 'sort-container' }]}>
+            <TouchableOpacity 
+              style={styles.sortButton}
+              onPress={() => setShowSortMenu(!showSortMenu)}
+            >
+              <Text style={styles.sortButtonText}>{sortBy.label}</Text>
+              <ChevronDown size={16} color="#64748b" />
+            </TouchableOpacity>
+
+            {showSortMenu && (
+              <View style={[styles.sortMenu, Platform.OS === 'web' && styles.sortMenuWeb]}>
+                {sortOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.sortOption,
+                      sortBy.value === option.value && styles.selectedSortOption,
+                    ]}
+                    onPress={() => {
+                      setSortBy(option);
+                      setShowSortMenu(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.sortOptionText,
+                      sortBy.value === option.value && styles.selectedSortOptionText,
+                    ]}>
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
         </View>
       </View>
 
@@ -226,6 +242,11 @@ export default function FindLawyers() {
                     <MapPin size={14} color="#64748b" />
                     <Text style={styles.location}>{lawyer.location}</Text>
                   </View>
+                  {lawyer.pro_bono && (
+                    <View style={styles.proBonoBadge}>
+                      <Text style={styles.proBonoBadgeText}>Pro Bono</Text>
+                    </View>
+                  )}
                   {isAuthenticated && (
                     <View style={styles.ratingContainer}>
                       <Star size={14} color="#fbbf24" fill="#fbbf24" />
@@ -245,6 +266,7 @@ export default function FindLawyers() {
               onPress={() => {
                 setSearchQuery('');
                 setSelectedSpecialty('');
+                setShowProBonoOnly(false);
               }}>
               <Text style={styles.resetButtonText}>Reset Search</Text>
             </TouchableOpacity>
@@ -322,10 +344,32 @@ const styles = StyleSheet.create({
   selectedSpecialtyText: {
     color: '#ffffff',
   },
-  sortContainer: {
+  filterActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 12,
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
+  },
+  proBonoToggle: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: '#f1f5f9',
+  },
+  proBonoToggleActive: {
+    backgroundColor: '#7C3AED',
+  },
+  proBonoToggleText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#64748b',
+  },
+  proBonoToggleTextActive: {
+    color: '#ffffff',
+  },
+  sortContainer: {
     position: 'relative',
     zIndex: 1000,
   },
@@ -345,8 +389,7 @@ const styles = StyleSheet.create({
   sortMenu: {
     position: 'absolute',
     top: '100%',
-    left: 12,
-    right: 12,
+    right: 0,
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 8,
@@ -358,6 +401,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
+    minWidth: 180,
   },
   sortMenuWeb: {
     position: 'absolute',
@@ -433,6 +477,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     marginLeft: 4,
+  },
+  proBonoBadge: {
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  proBonoBadgeText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#dc2626',
   },
   ratingContainer: {
     flexDirection: 'row',
