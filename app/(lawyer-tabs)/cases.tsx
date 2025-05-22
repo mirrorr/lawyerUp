@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from '
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Clock, User, ChevronRight } from 'lucide-react-native';
+import { theme } from '@/constants/theme';
 
 export default function LawyerCases() {
   const [loading, setLoading] = useState(true);
@@ -111,19 +112,19 @@ export default function LawyerCases() {
               <View style={styles.caseFooter}>
                 <View style={styles.caseInfo}>
                   <View style={styles.infoItem}>
-                    <Clock size={16} color="#64748b" />
+                    <Clock size={16} color={theme.colors.text.secondary} />
                     <Text style={styles.infoText}>
                       {new Date(case_.created_at).toLocaleDateString()}
                     </Text>
                   </View>
                   <View style={styles.infoItem}>
-                    <User size={16} color="#64748b" />
+                    <User size={16} color={theme.colors.text.secondary} />
                     <Text style={styles.infoText}>
                       Client #{case_.user_id.slice(0, 8)}
                     </Text>
                   </View>
                 </View>
-                <ChevronRight size={20} color="#64748b" />
+                <ChevronRight size={20} color={theme.colors.text.secondary} />
               </View>
             </TouchableOpacity>
           ))
@@ -136,26 +137,26 @@ export default function LawyerCases() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: theme.colors.border,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   content: {
     flex: 1,
     padding: 20,
   },
   caseCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
   caseTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     flex: 1,
     marginRight: 12,
   },
@@ -193,13 +194,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   openBadge: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: theme.colors.info + '20',
   },
   inProgressBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: theme.colors.warning + '20',
   },
   closedBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: theme.colors.success + '20',
   },
   statusText: {
     fontSize: 12,
@@ -207,17 +208,17 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   openText: {
-    color: '#2563eb',
+    color: theme.colors.info,
   },
   inProgressText: {
-    color: '#d97706',
+    color: theme.colors.warning,
   },
   closedText: {
-    color: '#059669',
+    color: theme.colors.success,
   },
   caseDescription: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginBottom: 16,
     lineHeight: 20,
   },
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   loadingContainer: {
     flex: 1,
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
@@ -255,19 +256,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -279,12 +280,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
   },
 });
