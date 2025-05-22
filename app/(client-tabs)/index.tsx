@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Search, MapPin, Star, ChevronDown } from 'lucide-react-native';
 import { Link } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import Header from '@/components/Header';
 
 const specialties = [
   'Criminal Law',
@@ -79,7 +80,6 @@ export default function FindLawyers() {
     });
   }, [searchQuery, selectedSpecialty, lawyers]);
 
-  // Close sort menu when clicking outside
   useEffect(() => {
     if (Platform.OS === 'web') {
       const handleClickOutside = (event: MouseEvent) => {
@@ -115,12 +115,7 @@ export default function FindLawyers() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Image 
-          source={require('../../assets/images/logo2.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+      <Header>
         <View style={styles.searchContainer}>
           <Search size={20} color="#64748b" style={styles.searchIcon} />
           <TextInput
@@ -131,7 +126,7 @@ export default function FindLawyers() {
             placeholderTextColor="#94a3b8"
           />
         </View>
-      </View>
+      </Header>
 
       <View style={styles.filtersContainer}>
         <ScrollView 
@@ -259,18 +254,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
-  },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  logo: {
-    width: 200,
-    height: 50,
-    marginBottom: 16,
   },
   searchContainer: {
     flexDirection: 'row',
