@@ -5,7 +5,11 @@ export default function Welcome() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image source={{ uri: "https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg" }} style={styles.image} />
+        <Image 
+          source={require('../assets/images/logo2.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>Find Your Legal Expert</Text>
         <Text style={styles.subtitle}>Connect with experienced lawyers for professional legal advice</Text>
       </View>
@@ -42,10 +46,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
   },
-  image: {
-    width: "100%",
-    height: 300,
-    borderRadius: 20,
+  logo: {
+    width: 200,
+    height: 50,
     marginBottom: 40,
   },
   title: {

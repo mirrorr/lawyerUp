@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { MessageSquare, Calendar, Star, Clock } from 'lucide-react-native';
 
@@ -58,7 +58,11 @@ export default function LawyerDashboard() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Dashboard</Text>
+          <Image 
+            source={require('../../assets/images/logo2.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading dashboard...</Text>
@@ -71,7 +75,11 @@ export default function LawyerDashboard() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Dashboard</Text>
+          <Image 
+            source={require('../../assets/images/logo2.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -83,7 +91,11 @@ export default function LawyerDashboard() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
+        <Image 
+          source={require('../../assets/images/logo2.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
       </View>
 
       <ScrollView style={styles.content}>
@@ -140,11 +152,11 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 60,
     backgroundColor: '#ffffff',
+    alignItems: 'center',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1e293b',
+  logo: {
+    width: 200,
+    height: 50,
   },
   content: {
     flex: 1,
