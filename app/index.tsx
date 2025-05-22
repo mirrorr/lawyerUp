@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   button: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#2F3B7D",
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
@@ -87,10 +87,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#7C3AED",
+    borderColor: "#2F3B7D",
   },
   signUpButtonText: {
-    color: "#7C3AED",
+    color: "#2F3B7D",
     fontSize: 16,
     fontWeight: "600",
   },
