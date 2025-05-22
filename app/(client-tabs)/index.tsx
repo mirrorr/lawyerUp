@@ -39,7 +39,7 @@ export default function FindLawyers() {
   useEffect(() => {
     checkAuthStatus();
     fetchLawyers();
-  }, [sortBy, showProBonoOnly]);
+  }, [sortBy]);
 
   const checkAuthStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -54,10 +54,6 @@ export default function FindLawyers() {
         .select('*')
         .eq('validation_status', 'approved')
         .order(sortBy.value, { ascending: sortBy.order === 'asc' });
-
-      if (showProBonoOnly) {
-        query = query.eq('pro_bono', true);
-      }
 
       const { data, error: fetchError } = await query;
 
@@ -242,11 +238,6 @@ export default function FindLawyers() {
                     <MapPin size={14} color="#64748b" />
                     <Text style={styles.location}>{lawyer.location}</Text>
                   </View>
-                  {lawyer.pro_bono && (
-                    <View style={styles.proBonoBadge}>
-                      <Text style={styles.proBonoBadgeText}>Pro Bono</Text>
-                    </View>
-                  )}
                   {isAuthenticated && (
                     <View style={styles.ratingContainer}>
                       <Star size={14} color="#fbbf24" fill="#fbbf24" />
@@ -477,19 +468,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748b',
     marginLeft: 4,
-  },
-  proBonoBadge: {
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-    marginTop: 8,
-  },
-  proBonoBadgeText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#dc2626',
   },
   ratingContainer: {
     flexDirection: 'row',
