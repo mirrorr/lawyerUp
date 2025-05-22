@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut, User } from 'lucide-react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Platform } from 'react-native';
+import { Settings, Bell, Shield, CreditCard, CircleHelp as HelpCircle, LogOut, User, Calendar, Edit2, Plus, X } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 
@@ -36,9 +36,19 @@ export default function LawyerProfile() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
+  const [proBonoPeriods, setProBonoPeriods] = useState<any[]>([]);
+  const [showAddProBono, setShowAddProBono] = useState(false);
+  const [newProBono, setNewProBono] = useState({
+    start_date: '',
+    end_date: '',
+  });
 
   useEffect(() => {
     fetchProfile();
+    fetchProBonoPeriods();
   }, []);
 
   const fetchProfile = async () => {
@@ -55,11 +65,88 @@ export default function LawyerProfile() {
 
       if (profileError) throw profileError;
       setProfile(data);
+      setEditedProfile(data);
     } catch (err: any) {
       setError(err.message);
       console.error('Error fetching lawyer profile:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProBonoPeriods = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('pro_bono_periods')
+        .select('*')
+        .eq('lawyer_id', user.id)
+        .order('start_date', { ascending: true });
+
+      if (error) throw error;
+      setProBonoPeriods(data || []);
+    } catch (err) {
+      console.error('Error fetching pro bono periods:', err);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setSaving(true);
+      const { error: updateError } = await supabase
+        .from('lawyers')
+        .update(editedProfile)
+        .eq('id', profile.id);
+
+      if (updateError) throw updateError;
+
+      setProfile(editedProfile);
+      setIsEditing(false);
+    } catch (err: any) {
+      console.error('Error updating profile:', err);
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddProBono = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('pro_bono_periods')
+        .insert({
+          lawyer_id: user.id,
+          start_date: newProBono.start_date,
+          end_date: newProBono.end_date,
+        });
+
+      if (error) throw error;
+
+      setShowAddProBono(false);
+      setNewProBono({ start_date: '', end_date: '' });
+      await fetchProBonoPeriods();
+    } catch (err: any) {
+      console.error('Error adding pro bono period:', err);
+      setError(err.message);
+    }
+  };
+
+  const handleDeleteProBono = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('pro_bono_periods')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      await fetchProBonoPeriods();
+    } catch (err) {
+      console.error('Error deleting pro bono period:', err);
     }
   };
 
@@ -101,6 +188,14 @@ export default function LawyerProfile() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Profile</Text>
+        {!isEditing && (
+          <TouchableOpacity 
+            style={styles.editButton}
+            onPress={() => setIsEditing(true)}
+          >
+            <Edit2 size={20} color="#7C3AED" />
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView style={styles.content}>
@@ -109,52 +204,225 @@ export default function LawyerProfile() {
             source={{ uri: profile.image_url }}
             style={styles.profileImage}
           />
-          <Text style={styles.name}>{profile.name}</Text>
-          <Text style={styles.specialty}>{profile.specialty}</Text>
-          <View style={[
-            styles.validationStatus,
-            profile.validation_status === 'approved' && styles.approvedStatus,
-            profile.validation_status === 'rejected' && styles.rejectedStatus,
-          ]}>
-            <Text style={[
-              styles.validationText,
-              profile.validation_status === 'approved' && styles.approvedText,
-              profile.validation_status === 'rejected' && styles.rejectedText,
-            ]}>
-              {profile.validation_status.charAt(0).toUpperCase() + profile.validation_status.slice(1)}
-            </Text>
-          </View>
+          {isEditing ? (
+            <View style={styles.editForm}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.name}
+                  onChangeText={(text) => setEditedProfile(prev => ({ ...prev, name: text }))}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Specialty</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.specialty}
+                  onChangeText={(text) => setEditedProfile(prev => ({ ...prev, specialty: text }))}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Location</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.location}
+                  onChangeText={(text) => setEditedProfile(prev => ({ ...prev, location: text }))}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Experience</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.experience}
+                  onChangeText={(text) => setEditedProfile(prev => ({ ...prev, experience: text }))}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Education</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.education}
+                  onChangeText={(text) => setEditedProfile(prev => ({ ...prev, education: text }))}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Languages (comma-separated)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.languages.join(', ')}
+                  onChangeText={(text) => setEditedProfile(prev => ({ 
+                    ...prev, 
+                    languages: text.split(',').map(lang => lang.trim()) 
+                  }))}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Consultation Fee</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.consultation_fee}
+                  onChangeText={(text) => setEditedProfile(prev => ({ ...prev, consultation_fee: text }))}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>About</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={editedProfile.about}
+                  onChangeText={(text) => setEditedProfile(prev => ({ ...prev, about: text }))}
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
+              <View style={styles.editActions}>
+                <TouchableOpacity 
+                  style={styles.cancelButton}
+                  onPress={() => {
+                    setIsEditing(false);
+                    setEditedProfile(profile);
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.saveButton, saving && styles.buttonDisabled]}
+                  onPress={handleSaveProfile}
+                  disabled={saving}
+                >
+                  <Text style={styles.saveButtonText}>
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.name}>{profile.name}</Text>
+              <Text style={styles.specialty}>{profile.specialty}</Text>
+              <View style={[
+                styles.validationStatus,
+                profile.validation_status === 'approved' && styles.approvedStatus,
+                profile.validation_status === 'rejected' && styles.rejectedStatus,
+              ]}>
+                <Text style={[
+                  styles.validationText,
+                  profile.validation_status === 'approved' && styles.approvedText,
+                  profile.validation_status === 'rejected' && styles.rejectedText,
+                ]}>
+                  {profile.validation_status.charAt(0).toUpperCase() + profile.validation_status.slice(1)}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
-        <View style={styles.statsSection}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{profile.rating.toFixed(1)}</Text>
-            <Text style={styles.statLabel}>Rating</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{profile.reviews_count}</Text>
-            <Text style={styles.statLabel}>Reviews</Text>
-          </View>
-        </View>
+        {!isEditing && (
+          <>
+            <View style={styles.statsSection}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{profile.rating.toFixed(1)}</Text>
+                <Text style={styles.statLabel}>Rating</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{profile.reviews_count}</Text>
+                <Text style={styles.statLabel}>Reviews</Text>
+              </View>
+            </View>
 
-        <View style={styles.infoSection}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Location</Text>
-            <Text style={styles.infoValue}>{profile.location}</Text>
+            <View style={styles.infoSection}>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Location</Text>
+                <Text style={styles.infoValue}>{profile.location}</Text>
+              </View>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Experience</Text>
+                <Text style={styles.infoValue}>{profile.experience}</Text>
+              </View>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Languages</Text>
+                <Text style={styles.infoValue}>{profile.languages.join(', ')}</Text>
+              </View>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoLabel}>Education</Text>
+                <Text style={styles.infoValue}>{profile.education}</Text>
+              </View>
+            </View>
+          </>
+        )}
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Pro Bono Periods</Text>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={() => setShowAddProBono(true)}
+            >
+              <Plus size={20} color="#7C3AED" />
+            </TouchableOpacity>
           </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Experience</Text>
-            <Text style={styles.infoValue}>{profile.experience}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Languages</Text>
-            <Text style={styles.infoValue}>{profile.languages.join(', ')}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Education</Text>
-            <Text style={styles.infoValue}>{profile.education}</Text>
-          </View>
+
+          {showAddProBono && (
+            <View style={styles.addProBonoForm}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Start Date</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProBono.start_date}
+                  onChangeText={(text) => setNewProBono(prev => ({ ...prev, start_date: text }))}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>End Date</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newProBono.end_date}
+                  onChangeText={(text) => setNewProBono(prev => ({ ...prev, end_date: text }))}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
+              <View style={styles.editActions}>
+                <TouchableOpacity 
+                  style={styles.cancelButton}
+                  onPress={() => {
+                    setShowAddProBono(false);
+                    setNewProBono({ start_date: '', end_date: '' });
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.saveButton}
+                  onPress={handleAddProBono}
+                >
+                  <Text style={styles.saveButtonText}>Add Period</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {proBonoPeriods.map((period) => (
+            <View key={period.id} style={styles.proBonoPeriod}>
+              <View style={styles.periodInfo}>
+                <Calendar size={16} color="#64748b" />
+                <Text style={styles.periodText}>
+                  {new Date(period.start_date).toLocaleDateString()} - {new Date(period.end_date).toLocaleDateString()}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeleteProBono(period.id)}
+              >
+                <X size={16} color="#ef4444" />
+              </TouchableOpacity>
+            </View>
+          ))}
+
+          {proBonoPeriods.length === 0 && !showAddProBono && (
+            <Text style={styles.noPeriodsText}>No pro bono periods set</Text>
+          )}
         </View>
 
         <TouchableOpacity 
@@ -198,6 +466,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 20,
     paddingTop: 60,
     backgroundColor: '#ffffff',
@@ -206,6 +477,11 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: '#1e293b',
+  },
+  editButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f1f5f9',
   },
   content: {
     flex: 1,
@@ -220,6 +496,62 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: 16,
+  },
+  editForm: {
+    width: '100%',
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    color: '#64748b',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#1e293b',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  editActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+    marginTop: 20,
+  },
+  cancelButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  cancelButtonText: {
+    color: '#64748b',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  saveButton: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  saveButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   name: {
     fontSize: 24,
@@ -299,6 +631,61 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 16,
     color: '#1e293b',
+  },
+  section: {
+    backgroundColor: '#ffffff',
+    marginTop: 12,
+    padding: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  addButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#f1f5f9',
+  },
+  addProBonoForm: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  proBonoPeriod: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  periodInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  periodText: {
+    fontSize: 14,
+    color: '#1e293b',
+  },
+  deleteButton: {
+    padding: 8,
+  },
+  noPeriodsText: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    paddingVertical: 16,
   },
   clientSwitchButton: {
     flexDirection: 'row',
