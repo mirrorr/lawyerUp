@@ -21,7 +21,7 @@ export default function SignIn() {
 
       if (error) throw error;
 
-      router.replace('/auth/user-type');
+      router.replace('/(client-tabs)');
     } catch (err: any) {
       setError(err.message);
     } finally {
