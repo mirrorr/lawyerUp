@@ -1,7 +1,12 @@
 import { useEffect } from 'react';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import MainLayout from '@/components/MainLayout';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+
+declare global {
+  interface Window {
+    frameworkReady?: () => void;
+  }
+}
 
 export default function RootLayout() {
   useFrameworkReady();
@@ -10,13 +15,5 @@ export default function RootLayout() {
     window.frameworkReady?.();
   }, []);
 
-  return (
-    <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="auth" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-      <StatusBar style="auto" />
-    </>
-  );
+  return <MainLayout />;
 }

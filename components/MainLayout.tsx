@@ -27,7 +27,6 @@ export default function MainLayout() {
 
         if (error && error.code !== 'PGRST116') throw error;
         
-        // Only set as lawyer if profile exists and is approved
         setIsLawyer(!!data && data.validation_status === 'approved');
       } catch (err) {
         console.error('Error checking lawyer status:', err);
@@ -47,20 +46,9 @@ export default function MainLayout() {
   return (
     <View style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
-        {!session?.user ? (
-          // Authentication flow
-          <Stack.Screen name="auth" />
-        ) : isLawyer === true ? (
-          // Lawyer flow
-          <Stack.Screen name="(lawyer-tabs)" />
-        ) : (
-          // Client flow or lawyer validation
-          <>
-            <Stack.Screen name="auth/user-type" />
-            <Stack.Screen name="auth/lawyer-validation" />
-            <Stack.Screen name="(client-tabs)" />
-          </>
-        )}
+        {!session?.user && <Stack.Screen name="auth" />}
+        <Stack.Screen name="(client-tabs)" />
+        <Stack.Screen name="(lawyer-tabs)" />
       </Stack>
       <StatusBar style="auto" />
     </View>
