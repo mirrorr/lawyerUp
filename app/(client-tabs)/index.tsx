@@ -303,6 +303,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
+    alignItems: 'center',
   },
   logo: {
     width: 200,
