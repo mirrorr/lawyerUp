@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Send, ArrowLeft } from 'lucide-react-native';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/constants/theme';
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
@@ -123,7 +124,7 @@ export default function ChatScreen() {
             }}
             style={styles.backButton}
           >
-            <ArrowLeft size={24} color="#1e293b" />
+            <ArrowLeft size={24} color={theme.colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Loading...</Text>
         </View>
@@ -148,7 +149,7 @@ export default function ChatScreen() {
             }}
             style={styles.backButton}
           >
-            <ArrowLeft size={24} color="#1e293b" />
+            <ArrowLeft size={24} color={theme.colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Error</Text>
         </View>
@@ -179,7 +180,7 @@ export default function ChatScreen() {
           }}
           style={styles.backButton}
         >
-          <ArrowLeft size={24} color="#1e293b" />
+          <ArrowLeft size={24} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Chat</Text>
       </View>
@@ -229,7 +230,7 @@ export default function ChatScreen() {
           value={newMessage}
           onChangeText={setNewMessage}
           placeholder="Type your message..."
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor={theme.colors.text.secondary}
           multiline
         />
         <TouchableOpacity 
@@ -240,7 +241,7 @@ export default function ChatScreen() {
           onPress={sendMessage}
           disabled={!newMessage.trim() || sending}
         >
-          <Send size={20} color="#ffffff" />
+          <Send size={20} color={theme.colors.white} />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -250,7 +251,7 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   navigationHeader: {
     flexDirection: 'row',
@@ -258,9 +259,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: theme.colors.border,
   },
   backButton: {
     padding: 8,
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   messagesContainer: {
     flex: 1,
@@ -285,12 +286,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   userMessage: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     alignSelf: 'flex-end',
     borderBottomRightRadius: 4,
   },
   lawyerMessage: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     alignSelf: 'flex-start',
     borderBottomLeftRadius: 4,
     shadowColor: '#000',
@@ -307,10 +308,10 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   userMessageText: {
-    color: '#ffffff',
+    color: theme.colors.white,
   },
   lawyerMessageText: {
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   timestamp: {
     fontSize: 12,
@@ -318,35 +319,35 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   userTimestamp: {
-    color: '#ffffff',
+    color: theme.colors.white,
     opacity: 0.8,
   },
   lawyerTimestamp: {
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   inputContainer: {
     flexDirection: 'row',
     padding: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: theme.colors.border,
   },
   input: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: theme.colors.background,
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 8,
     marginRight: 12,
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     maxHeight: 100,
   },
   sendButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -360,19 +361,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -383,7 +384,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   emptyContainer: {
     flex: 1,
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
   },
 });
