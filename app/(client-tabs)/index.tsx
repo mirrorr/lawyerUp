@@ -49,20 +49,38 @@ export default function FindLawyers() {
   const fetchLawyers = async () => {
     try {
       setLoading(true);
-      let query = supabase
+      const today = new Date().toISOString().split('T')[0];
+
+      // First, get all lawyers
+      let { data: lawyers, error: lawyersError } = await supabase
         .from('lawyers')
-        .select('*')
+        .select(`
+          *,
+          pro_bono_periods(
+            id,
+            start_date,
+            end_date
+          )
+        `)
         .eq('validation_status', 'approved')
         .order(sortBy.value, { ascending: sortBy.order === 'asc' });
 
-      if (showProBonoOnly) {
-        query = query.eq('pro_bono', true);
-      }
+      if (lawyersError) throw lawyersError;
 
-      const { data, error: fetchError } = await query;
+      // Process lawyers to add pro_bono status based on periods
+      const processedLawyers = lawyers?.map(lawyer => ({
+        ...lawyer,
+        is_pro_bono: lawyer.pro_bono_periods?.some((period: any) => 
+          period.start_date <= today && period.end_date >= today
+        ) || false
+      })) || [];
 
-      if (fetchError) throw fetchError;
-      setLawyers(data || []);
+      // Filter by pro bono if needed
+      const filteredLawyers = showProBonoOnly 
+        ? processedLawyers.filter(lawyer => lawyer.is_pro_bono)
+        : processedLawyers;
+
+      setLawyers(filteredLawyers);
     } catch (err) {
       setError('Failed to load lawyers');
       console.error('Error:', err);
@@ -242,7 +260,7 @@ export default function FindLawyers() {
                     <MapPin size={14} color="#64748b" />
                     <Text style={styles.location}>{lawyer.location}</Text>
                   </View>
-                  {lawyer.pro_bono && (
+                  {lawyer.is_pro_bono && (
                     <View style={styles.proBonoBadge}>
                       <Text style={styles.proBonoBadgeText}>Pro Bono</Text>
                     </View>
