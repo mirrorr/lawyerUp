@@ -3,6 +3,7 @@ import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, StyleSheet,
 import { Search, MapPin, Star, ChevronDown } from 'lucide-react-native';
 import { Link } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/constants/theme';
 
 const specialties = [
   'Criminal Law',
@@ -51,7 +52,6 @@ export default function FindLawyers() {
       setLoading(true);
       const today = new Date().toISOString().split('T')[0];
 
-      // First, get all lawyers
       let { data: lawyers, error: lawyersError } = await supabase
         .from('lawyers')
         .select(`
@@ -67,7 +67,6 @@ export default function FindLawyers() {
 
       if (lawyersError) throw lawyersError;
 
-      // Process lawyers to add pro_bono status based on periods
       const processedLawyers = lawyers?.map(lawyer => ({
         ...lawyer,
         is_pro_bono: lawyer.pro_bono_periods?.some((period: any) => 
@@ -75,7 +74,6 @@ export default function FindLawyers() {
         ) || false
       })) || [];
 
-      // Filter by pro bono if needed
       const filteredLawyers = showProBonoOnly 
         ? processedLawyers.filter(lawyer => lawyer.is_pro_bono)
         : processedLawyers;
@@ -102,7 +100,6 @@ export default function FindLawyers() {
     });
   }, [searchQuery, selectedSpecialty, lawyers]);
 
-  // Close sort menu when clicking outside
   useEffect(() => {
     if (Platform.OS === 'web') {
       const handleClickOutside = (event: MouseEvent) => {
@@ -145,13 +142,13 @@ export default function FindLawyers() {
           resizeMode="contain"
         />
         <View style={styles.searchContainer}>
-          <Search size={20} color="#64748b" style={styles.searchIcon} />
+          <Search size={20} color={theme.colors.text.secondary} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search by name, location, or specialty..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor={theme.colors.text.secondary}
           />
         </View>
       </View>
@@ -212,7 +209,7 @@ export default function FindLawyers() {
               onPress={() => setShowSortMenu(!showSortMenu)}
             >
               <Text style={styles.sortButtonText}>{sortBy.label}</Text>
-              <ChevronDown size={16} color="#64748b" />
+              <ChevronDown size={16} color={theme.colors.text.secondary} />
             </TouchableOpacity>
 
             {showSortMenu && (
@@ -257,7 +254,7 @@ export default function FindLawyers() {
                   <Text style={styles.lawyerName}>{lawyer.name}</Text>
                   <Text style={styles.specialty}>{lawyer.specialty}</Text>
                   <View style={styles.locationContainer}>
-                    <MapPin size={14} color="#64748b" />
+                    <MapPin size={14} color={theme.colors.text.secondary} />
                     <Text style={styles.location}>{lawyer.location}</Text>
                   </View>
                   {lawyer.is_pro_bono && (
@@ -298,14 +295,14 @@ export default function FindLawyers() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: theme.colors.border,
   },
   logo: {
     width: 200,
@@ -315,11 +312,11 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.colors.border,
   },
   searchIcon: {
     marginRight: 8,
@@ -327,12 +324,12 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   filtersContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: theme.colors.border,
   },
   specialtiesContainer: {
     maxHeight: 52,
@@ -345,22 +342,22 @@ const styles = StyleSheet.create({
   specialtyChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: theme.colors.background,
     borderRadius: 16,
     marginRight: 8,
     height: 32,
     justifyContent: 'center',
   },
   selectedSpecialty: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
   },
   specialtyText: {
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     fontSize: 13,
     fontWeight: '500',
   },
   selectedSpecialtyText: {
-    color: '#ffffff',
+    color: theme.colors.white,
   },
   filterActions: {
     flexDirection: 'row',
@@ -368,24 +365,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+    borderTopColor: theme.colors.border,
   },
   proBonoToggle: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: theme.colors.background,
   },
   proBonoToggleActive: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
   },
   proBonoToggleText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   proBonoToggleTextActive: {
-    color: '#ffffff',
+    color: theme.colors.white,
   },
   sortContainer: {
     position: 'relative',
@@ -396,19 +393,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
     borderRadius: 8,
   },
   sortButtonText: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginRight: 4,
   },
   sortMenu: {
     position: 'absolute',
     top: '100%',
     right: 0,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 12,
     padding: 8,
     shadowColor: '#000',
@@ -431,14 +428,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   selectedSortOption: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: theme.colors.background,
   },
   sortOptionText: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   selectedSortOptionText: {
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     fontWeight: '600',
   },
   lawyersList: {
@@ -453,7 +450,7 @@ const styles = StyleSheet.create({
   },
   lawyerCard: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -479,12 +476,12 @@ const styles = StyleSheet.create({
   lawyerName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   specialty: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginBottom: 8,
   },
   locationContainer: {
@@ -493,7 +490,7 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginLeft: 4,
   },
   proBonoBadge: {
@@ -507,7 +504,7 @@ const styles = StyleSheet.create({
   proBonoBadgeText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#dc2626',
+    color: theme.colors.error,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -517,12 +514,12 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginLeft: 4,
   },
   reviews: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginLeft: 4,
   },
   noResults: {
@@ -532,35 +529,35 @@ const styles = StyleSheet.create({
   },
   noResultsText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
     marginBottom: 16,
   },
   resetButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   resetButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
