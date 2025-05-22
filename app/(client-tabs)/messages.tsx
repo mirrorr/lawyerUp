@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
 import { Link, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/constants/theme';
 
 export default function Messages() {
   const [chats, setChats] = useState<any[]>([]);
@@ -60,12 +61,14 @@ export default function Messages() {
           <Image source={{ uri: chat.lawyer.image_url }} style={styles.lawyerImage} />
           <View style={styles.messageContent}>
             <View style={styles.messageHeader}>
-              <Text style={styles.lawyerName}>{chat.lawyer.name}</Text>
-              <Text style={styles.timestamp}>{new Date(chat.created_at).toLocaleDateString()}</Text>
+              <Text style={styles.userName}>Client #{chat.user_id.slice(0, 8)}</Text>
+              <Text style={styles.timestamp}>
+                {new Date(chat.created_at).toLocaleDateString()}
+              </Text>
             </View>
-            <View style={styles.messagePreview}>
-              <Text style={styles.lastMessage}>Last message preview</Text>
-            </View>
+            <Text style={styles.lastMessage} numberOfLines={1}>
+              {chat.latest_message ? chat.latest_message.content : 'No messages yet'}
+            </Text>
           </View>
         </TouchableOpacity>
       </Link>
@@ -153,9 +156,6 @@ export default function Messages() {
         {chats.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No messages yet</Text>
-            <Text style={styles.emptySubtext}>
-              Start a conversation by finding a lawyer and clicking "Start Chat"
-            </Text>
           </View>
         ) : isWeb ? (
           <View style={styles.grid}>{renderGrid()}</View>
@@ -170,17 +170,17 @@ export default function Messages() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   notAuthenticatedContainer: {
     flex: 1,
@@ -190,18 +190,18 @@ const styles = StyleSheet.create({
   },
   notAuthenticatedText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
     marginBottom: 20,
   },
   loginButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
   },
   loginButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   messageCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -254,14 +254,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
-  lawyerName: {
+  userName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   timestamp: {
     fontSize: 12,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   messagePreview: {
     flexDirection: 'row',
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   lastMessage: {
     flex: 1,
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     marginRight: 8,
   },
   loadingContainer: {
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
@@ -290,19 +290,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#ef4444',
+    color: theme.colors.error,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   retryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -313,16 +313,8 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: 8,
+    fontSize: 16,
+    color: theme.colors.text.secondary,
     textAlign: 'center',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#64748b',
-    textAlign: 'center',
-    paddingHorizontal: 32,
   },
 });

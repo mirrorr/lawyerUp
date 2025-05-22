@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { supabase } from '@/lib/supabase';
-import { MessageSquare, Calendar, Star, Clock, Briefcase } from 'lucide-react-native';
+import { MessageSquare, Calendar, Star, Clock, Briefcase, Award, Globe, ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { theme } from '@/constants/theme';
 
 export default function LawyerDashboard() {
   const [stats, setStats] = useState({
@@ -28,7 +29,6 @@ export default function LawyerDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Fetch lawyer profile
       const { data: lawyer, error: lawyerError } = await supabase
         .from('lawyers')
         .select('rating, reviews_count')
@@ -37,7 +37,6 @@ export default function LawyerDashboard() {
 
       if (lawyerError) throw lawyerError;
 
-      // Fetch total chats
       const { count: chatsCount, error: chatsError } = await supabase
         .from('chats')
         .select('id', { count: 'exact' })
@@ -45,7 +44,6 @@ export default function LawyerDashboard() {
 
       if (chatsError) throw chatsError;
 
-      // Fetch case statistics
       const { data: cases, error: casesError } = await supabase
         .from('cases')
         .select('id, title, status, created_at')
@@ -124,13 +122,13 @@ export default function LawyerDashboard() {
       <ScrollView style={styles.content}>
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
-            <MessageSquare size={24} color="#2563eb" />
+            <MessageSquare size={24} color={theme.colors.info} />
             <Text style={styles.statValue}>{stats.totalChats}</Text>
             <Text style={styles.statLabel}>Active Chats</Text>
           </View>
 
           <View style={styles.statCard}>
-            <Calendar size={24} color="#059669" />
+            <Calendar size={24} color={theme.colors.success} />
             <Text style={styles.statValue}>{stats.pendingAppointments}</Text>
             <Text style={styles.statLabel}>Pending Appointments</Text>
           </View>
@@ -142,7 +140,7 @@ export default function LawyerDashboard() {
           </View>
 
           <View style={styles.statCard}>
-            <Clock size={24} color="#7c3aed" />
+            <Clock size={24} color={theme.colors.primary} />
             <Text style={styles.statValue}>{stats.reviewsCount}</Text>
             <Text style={styles.statLabel}>Total Reviews</Text>
           </View>
@@ -184,7 +182,7 @@ export default function LawyerDashboard() {
                 onPress={() => router.push(`/case/${case_.id}`)}
               >
                 <View style={styles.caseCardHeader}>
-                  <Briefcase size={20} color="#64748b" />
+                  <Briefcase size={20} color={theme.colors.text.secondary} />
                   <Text style={styles.caseTitle}>{case_.title}</Text>
                 </View>
                 <View style={[
@@ -218,12 +216,12 @@ export default function LawyerDashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.background,
   },
   header: {
     padding: 20,
     paddingTop: 60,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     alignItems: 'center',
   },
   logo: {
@@ -244,7 +242,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   statCardInner: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
@@ -260,17 +258,17 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     marginTop: 12,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     textAlign: 'center',
   },
   section: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.white,
     borderRadius: 16,
     padding: 20,
     marginTop: 20,
@@ -292,17 +290,17 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1e293b',
+    color: theme.colors.text.primary,
   },
   viewAllButton: {
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: theme.colors.background,
   },
   viewAllButtonText: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
     fontWeight: '500',
   },
   caseStats: {
@@ -316,13 +314,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeCase: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: theme.colors.warning + '20',
   },
   openCase: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: theme.colors.info + '20',
   },
   closedCase: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: theme.colors.success + '20',
   },
   caseStatValue: {
     fontSize: 24,
@@ -331,7 +329,7 @@ const styles = StyleSheet.create({
   },
   caseStatLabel: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   caseCard: {
     flexDirection: 'row',
@@ -340,7 +338,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: theme.colors.border,
   },
   caseCardHeader: {
     flexDirection: 'row',
@@ -350,7 +348,7 @@ const styles = StyleSheet.create({
   },
   caseTitle: {
     fontSize: 16,
-    color: '#1e293b',
+    color: theme.colors.text.primary,
     flex: 1,
   },
   statusBadge: {
@@ -359,13 +357,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   openBadge: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: theme.colors.info + '20',
   },
   inProgressBadge: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: theme.colors.warning + '20',
   },
   closedBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: theme.colors.success + '20',
   },
   statusText: {
     fontSize: 12,
@@ -373,13 +371,13 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   openText: {
-    color: '#2563eb',
+    color: theme.colors.info,
   },
   inProgressText: {
-    color: '#d97706',
+    color: theme.colors.warning,
   },
   closedText: {
-    color: '#059669',
+    color: theme.colors.success,
   },
   emptyState: {
     padding: 20,
@@ -387,7 +385,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 14,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   loadingContainer: {
     flex: 1,
@@ -396,7 +394,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#64748b',
+    color: theme.colors.text.secondary,
   },
   errorContainer: {
     flex: 1,
@@ -406,7 +404,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#ef4444',
+    color: theme.colors.error,
     textAlign: 'center',
   },
 });
