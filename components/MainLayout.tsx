@@ -45,7 +45,7 @@ export default function MainLayout() {
   return (
     <View style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
-        {!session ? (
+        {!session?.user ? (
           <Stack.Screen name="auth" options={{ gestureEnabled: false }} />
         ) : isLawyer ? (
           <Stack.Screen name="(lawyer-tabs)" options={{ gestureEnabled: false }} />
