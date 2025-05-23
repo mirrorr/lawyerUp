@@ -104,11 +104,19 @@ export default function BookConsultation() {
     }
   };
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color={theme.colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Schedule Consultation</Text>
@@ -124,7 +132,7 @@ export default function BookConsultation() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color={theme.colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Schedule Consultation</Text>
@@ -142,7 +150,7 @@ export default function BookConsultation() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <ArrowLeft size={24} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Schedule Consultation</Text>
