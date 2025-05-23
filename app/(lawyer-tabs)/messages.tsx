@@ -1,17 +1,30 @@
+// app/(lawyer-tabs)/messages.tsx
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
+import { Link, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/constants/theme';
+import { MapPin, Mail, Calendar } from 'lucide-react-native';
+
+interface ClientProfile {
+  id: string;
+  email: string;
+  location?: string;
+  created_at: string;
+  cases_count: number;
+}
 
 export default function LawyerMessages() {
   const [chats, setChats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { width } = useWindowDimensions();
+  const isWeb = Platform.OS === 'web';
+  const numColumns = isWeb ? Math.max(2, Math.floor(width / 400)) : 1;
 
   useEffect(() => {
     fetchChats();
-     
+    
     const subscription = supabase
       .channel('messages')
       .on('postgres_changes', {
@@ -34,20 +47,32 @@ export default function LawyerMessages() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data: chatsData, error: chatsError } = await supabase
+      // Get chats with client profile information and case count
+      const { data, error: chatsError } = await supabase
         .from('chats')
         .select(`
           *,
-          lawyer:lawyers(*)
+          user:auth.users!user_id(
+            id,
+            email,
+            created_at
+          ),
+          cases:cases(count)
         `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
 
       if (chatsError) throw chatsError;
 
-      const processedChats = (chatsData || []).map(chat => ({
+      // Process the data to include case count
+      const processedChats = (data || []).map(chat => ({
         ...chat,
-        latest_message: chat.messages?.[0] || null
+        client: {
+          id: chat.user.id,
+          email: chat.user.email,
+          created_at: chat.user.created_at,
+          cases_count: chat.cases[0]?.count || 0
+        }
       }));
 
       setChats(processedChats);
@@ -56,6 +81,71 @@ export default function LawyerMessages() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderChatCard = (chat: any) => (
+    <View style={styles.messageCardWrapper} key={chat.id}>
+      <Link 
+        href={`/chat/${chat.id}`} 
+        style={Platform.select({ web: { textDecoration: 'none' } })}
+      >
+        <TouchableOpacity style={styles.messageCard}>
+          <View style={styles.clientInfo}>
+            <View style={styles.clientAvatar}>
+              <Text style={styles.clientInitial}>
+                {chat.client.email[0].toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.clientDetails}>
+              <Text style={styles.clientEmail}>{chat.client.email}</Text>
+              <View style={styles.clientMetadata}>
+                <View style={styles.metadataItem}>
+                  <Calendar size={14} color={theme.colors.text.secondary} />
+                  <Text style={styles.metadataText}>
+                    Client since {new Date(chat.client.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+                <View style={styles.metadataItem}>
+                  <Mail size={14} color={theme.colors.text.secondary} />
+                  <Text style={styles.metadataText}>
+                    {chat.client.cases_count} {chat.client.cases_count === 1 ? 'case' : 'cases'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+          
+          <View style={styles.chatPreview}>
+            <Text style={styles.lastMessageTime}>
+              {new Date(chat.created_at).toLocaleString()}
+            </Text>
+            <View style={styles.chatStatus}>
+              <View style={styles.statusIndicator} />
+              <Text style={styles.statusText}>Active</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Link>
+    </View>
+  );
+
+  const renderGrid = () => {
+    const rows = [];
+    for (let i = 0; i < chats.length; i += numColumns) {
+      const row = [];
+      for (let j = 0; j < numColumns; j++) {
+        const index = i + j;
+        if (index < chats.length) {
+          row.push(renderChatCard(chats[index]));
+        } else {
+          row.push(
+            <View key={`empty-${j}`} style={[styles.messageCardWrapper, { flex: 1, marginHorizontal: 10 }]} />
+          );
+        }
+      }
+      rows.push(<View key={i} style={styles.row}>{row}</View>);
+    }
+    return rows;
   };
 
   if (loading) {
@@ -93,38 +183,15 @@ export default function LawyerMessages() {
         <Text style={styles.title}>Messages</Text>
       </View>
 
-      <ScrollView style={styles.chatsList}>
+      <ScrollView style={styles.messagesList}>
         {chats.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No messages yet</Text>
           </View>
+        ) : isWeb ? (
+          <View style={styles.grid}>{renderGrid()}</View>
         ) : (
-          chats.map((chat) => (
-            <Link 
-              key={chat.id} 
-              href={`/chat/${chat.id}`}
-              style={Platform.select({ web: { textDecoration: 'none' } })}
-            >
-              <TouchableOpacity style={styles.chatCard}>
-                <View style={styles.userAvatar}>
-                  <Text style={styles.userInitial}>
-                    {chat.user_id?.[0]?.toUpperCase() || '?'}
-                  </Text>
-                </View>
-                <View style={styles.chatInfo}>
-                  <View style={styles.chatHeader}>
-                    <Text style={styles.userName}>Client #{chat.user_id.slice(0, 8)}</Text>
-                    <Text style={styles.timestamp}>
-                      {new Date(chat.created_at).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <Text style={styles.lastMessage} numberOfLines={1}>
-                    {chat.latest_message ? chat.latest_message.content : 'No messages yet'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </Link>
-          ))
+          chats.map((chat) => renderChatCard(chat))
         )}
       </ScrollView>
     </View>
@@ -148,16 +215,25 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.text.primary,
   },
-  chatsList: {
+  messagesList: {
+    flex: 1,
+  },
+  grid: {
     padding: 20,
   },
-  chatCard: {
+  row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    marginHorizontal: -10,
+    marginBottom: 20,
+  },
+  messageCardWrapper: {
+    flex: 1,
+    marginHorizontal: 10,
+  },
+  messageCard: {
     backgroundColor: theme.colors.white,
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -167,41 +243,73 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  userAvatar: {
+  clientInfo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  clientAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
-  userInitial: {
+  clientInitial: {
     fontSize: 20,
     fontWeight: '600',
-    color: theme.colors.text.secondary,
+    color: theme.colors.primary,
   },
-  chatInfo: {
+  clientDetails: {
     flex: 1,
   },
-  chatHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  userName: {
+  clientEmail: {
     fontSize: 16,
     fontWeight: '600',
     color: theme.colors.text.primary,
+    marginBottom: 8,
   },
-  timestamp: {
+  clientMetadata: {
+    gap: 8,
+  },
+  metadataItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  metadataText: {
+    fontSize: 14,
+    color: theme.colors.text.secondary,
+  },
+  chatPreview: {
+    marginTop: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  lastMessageTime: {
     fontSize: 12,
     color: theme.colors.text.secondary,
   },
-  lastMessage: {
-    fontSize: 14,
-    color: theme.colors.text.secondary,
+  chatStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statusIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.success,
+  },
+  statusText: {
+    fontSize: 12,
+    color: theme.colors.success,
+    fontWeight: '500',
   },
   loadingContainer: {
     flex: 1,
