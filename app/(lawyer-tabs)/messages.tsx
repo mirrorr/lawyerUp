@@ -51,13 +51,7 @@ export default function LawyerMessages() {
       const { data, error: chatsError } = await supabase
         .from('chats')
         .select(`
-          *,
-          user:auth.users!user_id(
-            id,
-            email,
-            created_at
-          ),
-          cases:cases(count)
+          *
         `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
