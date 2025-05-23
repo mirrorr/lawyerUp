@@ -57,7 +57,7 @@ export default function LawyerMessages() {
             email,
             created_at
           ),
-          cases_count:cases(count(*))
+          cases_count:cases(count:id)
         `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
