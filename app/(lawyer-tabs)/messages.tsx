@@ -52,7 +52,7 @@ export default function LawyerMessages() {
         .from('chats')
         .select(`
           *,
-          user:auth.users!user_id(
+          user:auth.users(
             id,
             email,
             created_at
