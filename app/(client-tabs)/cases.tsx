@@ -64,6 +64,9 @@ export default function Cases() {
       setSubmitting(true);
       setError(null);
 
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       if (!newCase.title.trim() || !newCase.description.trim()) {
         throw new Error('Please fill in all fields');
       }
@@ -73,6 +76,7 @@ export default function Cases() {
         .insert({
           title: newCase.title.trim(),
           description: newCase.description.trim(),
+          user_id: user.id
         });
 
       if (createError) throw createError;

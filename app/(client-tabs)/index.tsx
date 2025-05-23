@@ -3,8 +3,8 @@ import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, Platform }
 import { ChevronDown } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/constants/theme';
-import SearchBar from '@/components/SearchBar';
-import LawyerList from '@/components/LawyerList';
+import SearchBar from '@/components/client-tabs/SearchBar';
+import LawyerList from '@/components/client-tabs/LawyerList';
 
 const specialties = [
   'Criminal Law',

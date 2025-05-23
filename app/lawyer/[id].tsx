@@ -313,11 +313,11 @@ export default function LawyerProfile() {
               <MapPin size={16} color="#64748b" />
               <Text style={styles.location}>{lawyer.location}</Text>
             </View>
-            <View style={styles.ratingContainer}>
+            {isAuthenticated && (<View style={styles.ratingContainer}>
               {renderStars(lawyer.rating)}
               <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
               <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
-            </View>
+            </View>)}
             {isCurrentlyProBono && (
               <View style={styles.proBonoBadge}>
                 <Text style={styles.proBonoBadgeText}>Pro Bono</Text>
