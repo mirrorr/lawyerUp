@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Search, MapPin, Star, ChevronDown } from 'lucide-react-native';
-import { Link } from 'expo-router';
+import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { ChevronDown } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/constants/theme';
+import SearchBar from '@/components/SearchBar';
+import LawyerList from '@/components/LawyerList';
 
 const specialties = [
   'Criminal Law',
@@ -143,16 +144,7 @@ export default function FindLawyers() {
           style={styles.logo}
           resizeMode="contain"
         />
-        <View style={styles.searchContainer}>
-          <Search size={20} color={theme.colors.text.secondary} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by name, location, or specialty..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor={theme.colors.text.secondary}
-          />
-        </View>
+        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       </View>
 
       <View style={styles.filtersContainer}>
@@ -247,48 +239,13 @@ export default function FindLawyers() {
         contentContainerStyle={styles.lawyersContent}
         showsVerticalScrollIndicator={true}
       >
-        {filteredLawyers().length > 0 ? (
-          filteredLawyers().map((lawyer) => (
-            <Link key={lawyer.id} href={`/lawyer/${lawyer.id}`} style={[styles.lawyerLink, Platform.select({ web: { textDecoration: 'none' } })]}>
-              <View style={styles.lawyerCard}>
-                <Image source={{ uri: lawyer.image_url }} style={styles.lawyerImage} />
-                <View style={styles.lawyerInfo}>
-                  <Text style={styles.lawyerName}>{lawyer.name}</Text>
-                  <Text style={styles.specialty}>{lawyer.specialty}</Text>
-                  <View style={styles.locationContainer}>
-                    <MapPin size={14} color={theme.colors.text.secondary} />
-                    <Text style={styles.location}>{lawyer.location}</Text>
-                  </View>
-                  {lawyer.is_pro_bono && (
-                    <View style={styles.proBonoBadge}>
-                      <Text style={styles.proBonoBadgeText}>Pro Bono</Text>
-                    </View>
-                  )}
-                  {isAuthenticated && (
-                    <View style={styles.ratingContainer}>
-                      <Star size={14} color="#fbbf24" fill="#fbbf24" />
-                      <Text style={styles.rating}>{lawyer.rating.toFixed(1)}</Text>
-                      <Text style={styles.reviews}>({lawyer.reviews_count} reviews)</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            </Link>
-          ))
-        ) : (
-          <View style={styles.noResults}>
-            <Text style={styles.noResultsText}>No lawyers found matching your search criteria</Text>
-            <TouchableOpacity 
-              style={styles.resetButton}
-              onPress={() => {
-                setSearchQuery('');
-                setSelectedSpecialty('');
-                setShowProBonoOnly(false);
-              }}>
-              <Text style={styles.resetButtonText}>Reset Search</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <LawyerList 
+          filteredLawyers={filteredLawyers()} 
+          isAuthenticated={isAuthenticated}
+          setSearchQuery={setSearchQuery}
+          setSelectedSpecialty={setSelectedSpecialty}
+          setShowProBonoOnly={setShowProBonoOnly}
+        />
       </ScrollView>
     </View>
   );
@@ -311,33 +268,6 @@ const styles = StyleSheet.create({
     height: 50,
     marginBottom: 16,
     alignSelf: 'center',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: theme.colors.text.secondary,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.background,
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: theme.colors.text.primary,
   },
   filtersContainer: {
     backgroundColor: theme.colors.white,
@@ -458,104 +388,14 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 100,
   },
-  lawyerLink: {
-    width: '100%',
-  },
-  lawyerCard: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.white,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    width: '100%',
-  },
-  lawyerImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginRight: 16,
-  },
-  lawyerInfo: {
+  loadingContainer: {
     flex: 1,
-  },
-  lawyerName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginBottom: 4,
-  },
-  specialty: {
-    fontSize: 14,
-    color: theme.colors.text.secondary,
-    marginBottom: 8,
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  location: {
-    fontSize: 14,
-    color: theme.colors.text.secondary,
-    marginLeft: 4,
-  },
-  proBonoBadge: {
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-    marginTop: 8,
-  },
-  proBonoBadgeText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: theme.colors.error,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  rating: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.text.primary,
-    marginLeft: 4,
-  },
-  reviews: {
-    fontSize: 14,
-    color: theme.colors.text.secondary,
-    marginLeft: 4,
-  },
-  noResults: {
-    alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
+    alignItems: 'center',
   },
-  noResultsText: {
+  loadingText: {
     fontSize: 16,
     color: theme.colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  resetButton: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  resetButtonText: {
-    color: theme.colors.white,
-    fontSize: 14,
-    fontWeight: '600',
   },
   errorText: {
     color: theme.colors.error,
