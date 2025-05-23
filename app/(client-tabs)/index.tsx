@@ -117,7 +117,9 @@ export default function FindLawyers() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text>Loading lawyers...</Text>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading lawyers...</Text>
+        </View>
       </View>
     );
   }
@@ -309,6 +311,16 @@ const styles = StyleSheet.create({
     height: 50,
     marginBottom: 16,
     alignSelf: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: theme.colors.text.secondary,
   },
   searchContainer: {
     flexDirection: 'row',
