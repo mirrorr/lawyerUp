@@ -52,11 +52,12 @@ export default function LawyerMessages() {
         .from('chats')
         .select(`
           *,
-          user:auth.users(
+          user:auth.users!user_id(
             id,
             email,
             created_at
-          )
+          ),
+          cases:cases(count)
         `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
@@ -70,7 +71,7 @@ export default function LawyerMessages() {
           id: chat.user.id,
           email: chat.user.email,
           created_at: chat.user.created_at,
-          cases_count: chat.cases_count[0]?.count || 0
+          cases_count: chat.cases[0]?.count || 0
         }
       }));
 
