@@ -13,9 +13,12 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [chatInfo, setChatInfo] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
+    checkAuthStatus();
     fetchMessages();
     
     // Subscribe to new messages
@@ -39,12 +42,25 @@ export default function ChatScreen() {
     };
   }, [id]);
 
+  const checkAuthStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUser(user);
+  };
+
   const fetchMessages = async () => {
     try {
       setLoading(true);
       const { data: chatData, error: chatError } = await supabase
         .from('chats')
-        .select('*, lawyer:lawyers(*)')
+        .select(`
+          *,
+          lawyer:lawyers(
+            id,
+            name,
+            specialty,
+            image_url
+          )
+        `)
         .eq('id', id)
         .maybeSingle();
 
@@ -55,6 +71,8 @@ export default function ChatScreen() {
         return;
       }
 
+      setChatInfo(chatData);
+      
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
         .select('*')
@@ -163,6 +181,8 @@ export default function ChatScreen() {
     );
   }
 
+  const isLawyer = currentUser?.id === chatInfo?.lawyer_id;
+
   return (
     <KeyboardAvoidingView 
       style={styles.container} 
@@ -182,7 +202,14 @@ export default function ChatScreen() {
         >
           <ArrowLeft size={24} color={theme.colors.text.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chat</Text>
+        <View style={styles.headerInfo}>
+          <Text style={styles.headerTitle}>
+            {isLawyer ? `Client #${chatInfo.user_id.slice(0, 8)}` : chatInfo.lawyer.name}
+          </Text>
+          <Text style={styles.headerSubtitle}>
+            {isLawyer ? 'Client' : chatInfo.lawyer.specialty}
+          </Text>
+        </View>
       </View>
 
       <ScrollView 
@@ -197,27 +224,34 @@ export default function ChatScreen() {
           </View>
         ) : (
           messages.map((message) => {
-            const isUser = message.sender_id === supabase.auth.getUser()?.data?.user?.id;
+            const isCurrentUser = message.sender_id === currentUser?.id;
+            const isLawyerMessage = message.sender_id === chatInfo.lawyer_id;
             return (
               <View
                 key={message.id}
                 style={[
                   styles.messageBubble,
-                  isUser ? styles.userMessage : styles.lawyerMessage,
+                  isCurrentUser ? styles.userMessage : styles.otherMessage,
+                  isLawyerMessage && !isCurrentUser && styles.lawyerMessage
                 ]}
               >
                 <Text style={[
                   styles.messageText,
-                  isUser ? styles.userMessageText : styles.lawyerMessageText,
+                  isCurrentUser ? styles.userMessageText : styles.otherMessageText,
                 ]}>
                   {message.content}
                 </Text>
                 <Text style={[
                   styles.timestamp,
-                  isUser ? styles.userTimestamp : styles.lawyerTimestamp,
+                  isCurrentUser ? styles.userTimestamp : styles.otherTimestamp,
                 ]}>
                   {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </Text>
+                {isLawyerMessage && !isCurrentUser && (
+                  <View style={styles.lawyerBadge}>
+                    <Text style={styles.lawyerBadgeText}>Lawyer</Text>
+                  </View>
+                )}
               </View>
             );
           })
@@ -267,10 +301,18 @@ const styles = StyleSheet.create({
     padding: 8,
     marginRight: 12,
   },
+  headerInfo: {
+    flex: 1,
+  },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
     color: theme.colors.text.primary,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: theme.colors.text.secondary,
+    marginTop: 2,
   },
   messagesContainer: {
     flex: 1,
@@ -290,7 +332,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     borderBottomRightRadius: 4,
   },
-  lawyerMessage: {
+  otherMessage: {
     backgroundColor: theme.colors.white,
     alignSelf: 'flex-start',
     borderBottomLeftRadius: 4,
@@ -303,6 +345,9 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
+  lawyerMessage: {
+    backgroundColor: '#E3F2FD',
+  },
   messageText: {
     fontSize: 16,
     lineHeight: 22,
@@ -310,7 +355,7 @@ const styles = StyleSheet.create({
   userMessageText: {
     color: theme.colors.white,
   },
-  lawyerMessageText: {
+  otherMessageText: {
     color: theme.colors.text.primary,
   },
   timestamp: {
@@ -322,8 +367,22 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     opacity: 0.8,
   },
-  lawyerTimestamp: {
+  otherTimestamp: {
     color: theme.colors.text.secondary,
+  },
+  lawyerBadge: {
+    position: 'absolute',
+    top: -20,
+    left: 0,
+    backgroundColor: theme.colors.info,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  lawyerBadgeText: {
+    color: theme.colors.white,
+    fontSize: 12,
+    fontWeight: '500',
   },
   inputContainer: {
     flexDirection: 'row',
