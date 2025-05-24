@@ -20,10 +20,7 @@ export default function LawyerAppointments() {
 
       const { data, error: appointmentsError } = await supabase
         .from('appointments')
-        .select(`
-          *,
-          user:users(id)
-        `)
+        .select('*')
         .eq('lawyer_id', user.id)
         .order('date', { ascending: true })
         .order('time', { ascending: true });
@@ -82,7 +79,7 @@ export default function LawyerAppointments() {
             <View key={appointment.id} style={styles.appointmentCard}>
               <View style={styles.appointmentHeader}>
                 <View style={styles.clientInfo}>
-                  <Text style={styles.clientId}>Client #{appointment.user.id.slice(0, 8)}</Text>
+                  <Text style={styles.clientId}>Client #{appointment.user_id.slice(0, 8)}</Text>
                 </View>
               </View>
 
