@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView, TextInput } from 'react-native';
-import { router } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { Send, ArrowLeft } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/constants/theme';
