@@ -1,13 +1,12 @@
-import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, Platform, KeyboardAvoidingView, TextInput } from 'react-native';
+import { router } from 'expo-router';
 import { Send, ArrowLeft } from 'lucide-react-native';
-import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/constants/theme';
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
-  const router = useRouter();
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -128,20 +127,16 @@ export default function ChatScreen() {
     }
   };
 
+  const handleBack = useCallback(() => {
+    const isLawyer = currentUser?.id === chatInfo?.lawyer_id;
+    router.replace(isLawyer ? '/(lawyer-tabs)/messages' : '/(client-tabs)/messages');
+  }, [currentUser?.id, chatInfo?.lawyer_id]);
+
   if (loading) {
     return (
       <View style={styles.container}>
         <View style={styles.navigationHeader}>
-          <TouchableOpacity 
-            onPress={() => {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.push('/');
-              }
-            }}
-            style={styles.backButton}
-          >
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color={theme.colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Loading...</Text>
@@ -157,16 +152,7 @@ export default function ChatScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.navigationHeader}>
-          <TouchableOpacity 
-            onPress={() => {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.push('/');
-              }
-            }}
-            style={styles.backButton}
-          >
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color={theme.colors.text.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Error</Text>
@@ -190,16 +176,7 @@ export default function ChatScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <View style={styles.navigationHeader}>
-        <TouchableOpacity 
-          onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.push('/');
-            }
-          }}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <ArrowLeft size={24} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
