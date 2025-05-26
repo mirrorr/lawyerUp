@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
+import { Link, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/constants/theme';
 
@@ -8,6 +8,9 @@ export default function LawyerMessages() {
   const [chats, setChats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { width } = useWindowDimensions();
+  const isWeb = Platform.OS === 'web';
+  const numColumns = isWeb ? Math.max(2, Math.floor(width / 400)) : 1;
 
   useEffect(() => {
     fetchChats();
@@ -38,7 +41,12 @@ export default function LawyerMessages() {
         .from('chats')
         .select(`
           *,
-          lawyer:lawyers(*)
+          lawyer:lawyers(*),
+          user:users(
+            id,
+            fname,
+            lname
+          )
         `)
         .eq('lawyer_id', user.id)
         .order('created_at', { ascending: false });
@@ -58,6 +66,56 @@ export default function LawyerMessages() {
     }
   };
 
+  const renderChatCard = (chat: any) => (
+    <View style={styles.messageCardWrapper} key={chat.id}>
+      <Link href={`/chat/${chat.id}`} style={Platform.select({ web: { textDecoration: 'none' } })}>
+        <TouchableOpacity style={styles.messageCard}>
+          <View style={styles.userAvatar}>
+            <Text style={styles.userInitial}>
+              {chat.user?.fname?.[0]?.toUpperCase() || '?'}
+            </Text>
+          </View>
+          <View style={styles.messageContent}>
+            <View style={styles.messageHeader}>
+              <Text style={styles.userName}>
+                {chat.user?.fname && chat.user?.lname 
+                  ? `${chat.user.fname} ${chat.user.lname}`
+                  : 'Anonymous User'}
+              </Text>
+              <Text style={styles.timestamp}>
+                {new Date(chat.created_at).toLocaleDateString()}
+              </Text>
+            </View>
+            <Text style={styles.lastMessage} numberOfLines={1}>
+              {chat.latest_message ? chat.latest_message.content : 'No messages yet'}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </Link>
+    </View>
+  );
+
+  const renderGrid = () => {
+    const rows = [];
+    for (let i = 0; i < chats.length; i += numColumns) {
+      const row = [];
+      for (let j = 0; j < numColumns; j++) {
+        const index = i + j;
+        if (index < chats.length) {
+          row.push(renderChatCard(chats[index]));
+        } else {
+          row.push(
+            <View key={`empty-${j}`} style={[styles.messageCardWrapper, { flex: 1, marginHorizontal: 10 }]}>
+              <View style={[styles.messageCard, styles.emptyCard]} />
+            </View>
+          );
+        }
+      }
+      rows.push(<View key={i} style={styles.row}>{row}</View>);
+    }
+    return rows;
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -65,7 +123,7 @@ export default function LawyerMessages() {
           <Text style={styles.title}>Messages</Text>
         </View>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading chats...</Text>
+          <Text style={styles.loadingText}>Loading...</Text>
         </View>
       </View>
     );
@@ -98,33 +156,10 @@ export default function LawyerMessages() {
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No messages yet</Text>
           </View>
+        ) : isWeb ? (
+          <View style={styles.grid}>{renderGrid()}</View>
         ) : (
-          chats.map((chat) => (
-            <Link 
-              key={chat.id} 
-              href={`/chat/${chat.id}`}
-              style={Platform.select({ web: { textDecoration: 'none' } })}
-            >
-              <TouchableOpacity style={styles.chatCard}>
-                <View style={styles.userAvatar}>
-                  <Text style={styles.userInitial}>
-                    {chat.user_id?.[0]?.toUpperCase() || '?'}
-                  </Text>
-                </View>
-                <View style={styles.chatInfo}>
-                  <View style={styles.chatHeader}>
-                    <Text style={styles.userName}>Client #{chat.user_id.slice(0, 8)}</Text>
-                    <Text style={styles.timestamp}>
-                      {new Date(chat.created_at).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <Text style={styles.lastMessage} numberOfLines={1}>
-                    {chat.latest_message ? chat.latest_message.content : 'No messages yet'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </Link>
-          ))
+          chats.map((chat) => renderChatCard(chat))
         )}
       </ScrollView>
     </View>
@@ -151,13 +186,22 @@ const styles = StyleSheet.create({
   chatsList: {
     padding: 20,
   },
-  chatCard: {
+  grid: {
+    padding: 20,
+  },
+  row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    marginHorizontal: -10,
+    marginBottom: 20,
+  },
+  messageCardWrapper: {
+    flex: 1,
+    marginHorizontal: 10,
+  },
+  messageCard: {
     backgroundColor: theme.colors.white,
     borderRadius: 16,
     padding: 16,
-    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -166,6 +210,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  emptyCard: {
+    backgroundColor: 'transparent',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   userAvatar: {
     width: 48,
@@ -181,10 +232,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.text.secondary,
   },
-  chatInfo: {
+  messageContent: {
     flex: 1,
   },
-  chatHeader: {
+  messageHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -237,7 +288,7 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center', 
+    justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 40,
   },
